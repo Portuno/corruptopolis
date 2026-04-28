@@ -20,9 +20,11 @@ import UserMenu from "@/components/auth/UserMenu";
 import { AUDIO_PHRASES, type PhraseKey } from "@/game/audio";
 import { useGameStore } from "@/game/store";
 import { speakViaProxy } from "@/lib/speech";
+import { formatPercent } from "@/lib/utils";
 
 const GameFrame = () => {
     const [isInfoOpen, setIsInfoOpen] = useState<boolean>(false);
+    const [isHydrated, setIsHydrated] = useState(false);
     const setOnPropagationEvent = useGameStore(
         (s) => s.setOnPropagationEvent,
     );
@@ -30,6 +32,16 @@ const GameFrame = () => {
     const phase = useGameStore((s) => s.phase);
     const result = useGameStore((s) => s.result);
     const grid = useGameStore((s) => s.grid);
+    const avg = useGameStore((s) => s.avg);
+    const controlled = useGameStore((s) => s.controlled);
+    const total = useGameStore((s) => s.total);
+    const monthLabel = useGameStore((s) => s.monthLabel);
+    const epochCounter = useGameStore((s) => s.epochCounter);
+    const epochProgress = useGameStore((s) => s.epochProgress);
+    const roundNumber = useGameStore((s) => s.roundNumber);
+    const credits = useGameStore((s) => s.metaProgress.credits);
+    const campaignWins = useGameStore((s) => s.metaProgress.campaign.wins);
+    const activeNerfs = useGameStore((s) => s.metaProgress.campaign.activeNerfs.length);
     const livingHiveEnabled = useGameStore((s) => s.livingHiveEnabled);
     const livingHiveIntensity = useGameStore((s) => s.livingHiveIntensity);
 
@@ -42,6 +54,10 @@ const GameFrame = () => {
         });
         return () => setOnPropagationEvent(null);
     }, [setOnPropagationEvent]);
+
+    useEffect(() => {
+        setIsHydrated(true);
+    }, []);
 
     useEffect(() => {
         const handleKey = (e: KeyboardEvent) => {
@@ -70,35 +86,94 @@ const GameFrame = () => {
             style={{ background: "var(--bg-base)" }}
         >
             <header
-                className="flex items-center justify-between gap-3 border-b px-4 py-3"
+                className="flex flex-col gap-2 border-b px-4 py-3"
                 style={{
                     borderColor: "var(--border-subtle)",
                     background: "var(--bg-surface)",
                 }}
             >
-                <div className="flex items-center gap-3">
-                    <h1
-                        className="text-sm font-bold uppercase tracking-[6px]"
-                        style={{ color: "var(--accent-player)" }}
-                    >
-                        Corruptópolis
-                    </h1>
+                <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                        <h1
+                            className="text-sm font-bold uppercase tracking-[6px]"
+                            style={{ color: "var(--accent-player)" }}
+                        >
+                            Corruptópolis
+                        </h1>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <button
+                            type="button"
+                            onClick={() => setIsInfoOpen(true)}
+                            className="rounded border px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-[2px]"
+                            style={{
+                                borderColor: "var(--border-subtle)",
+                                background: "var(--bg-surface)",
+                                color: "var(--text-secondary)",
+                            }}
+                        >
+                            Info
+                        </button>
+                        <UserMenu />
+                        <SettingsDrawer />
+                    </div>
                 </div>
-                <div className="flex items-center gap-3">
-                    <button
-                        type="button"
-                        onClick={() => setIsInfoOpen(true)}
-                        className="rounded border px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-[2px]"
+                <div
+                    className="rounded border px-3 py-2"
+                    style={{
+                        borderColor: "var(--border-subtle)",
+                        background:
+                            "linear-gradient(135deg, color-mix(in srgb, var(--bg-deep) 82%, var(--accent-player) 18%) 0%, var(--bg-deep) 100%)",
+                    }}
+                >
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div className="flex flex-col gap-1">
+                            <span
+                                className="text-[10px] uppercase tracking-[2.5px]"
+                                style={{ color: "var(--text-muted)" }}
+                            >
+                                Live campaign feed
+                            </span>
+                            <div
+                                className="text-sm font-semibold uppercase tracking-[3px]"
+                                style={{ color: "var(--text-primary)" }}
+                            >
+                                {monthLabel}
+                                <span
+                                    className="mx-2"
+                                    style={{ color: "var(--accent-player)" }}
+                                >
+                                    EPOCH
+                                </span>
+                                {epochCounter}
+                            </div>
+                        </div>
+                        <div className="mb-1 flex flex-wrap gap-x-5 gap-y-2">
+                            <HeaderStat label="Narrative" value={formatPercent(avg, 1)} />
+                            <HeaderStat label="Districts" value={`${controlled} / ${total}`} />
+                            <HeaderStat label="Round" value={String(roundNumber)} />
+                            <HeaderStat label="Wins" value={`${campaignWins}/12`} />
+                            <HeaderStat label="Nerfs" value={String(activeNerfs)} />
+                            <HeaderStat
+                                label="Credits"
+                                value={isHydrated ? String(credits) : "—"}
+                            />
+                        </div>
+                    </div>
+                    <div
+                        className="h-1.5 w-full overflow-hidden rounded"
                         style={{
-                            borderColor: "var(--border-subtle)",
-                            background: "var(--bg-surface)",
-                            color: "var(--text-secondary)",
+                            background: "color-mix(in srgb, var(--bg-base) 72%, black 28%)",
                         }}
                     >
-                        Info
-                    </button>
-                    <UserMenu />
-                    <SettingsDrawer />
+                        <div
+                            className="h-full transition-all"
+                            style={{
+                                width: `${epochProgress.toFixed(1)}%`,
+                                background: "var(--accent-player)",
+                            }}
+                        />
+                    </div>
                 </div>
             </header>
 
@@ -170,3 +245,17 @@ const GameFrame = () => {
 };
 
 export default GameFrame;
+
+interface HeaderStatProps {
+    label: string;
+    value: string;
+}
+
+const HeaderStat = ({ label, value }: HeaderStatProps) => (
+    <div className="flex flex-col gap-0.5">
+        <span className="text-[10px] uppercase tracking-[2px] text-[color:var(--text-muted)]">
+            {label}
+        </span>
+        <span className="text-sm font-bold text-[color:var(--text-primary)]">{value}</span>
+    </div>
+);
