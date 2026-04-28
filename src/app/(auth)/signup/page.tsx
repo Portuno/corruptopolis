@@ -7,6 +7,16 @@ import { useState, type FormEvent } from "react";
 import { logger } from "@/lib/logger";
 import { createClient } from "@/lib/supabase/client";
 
+const buildEmailRedirectUrl = (): string => {
+    const envSiteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+    const baseUrl =
+        envSiteUrl && envSiteUrl.length > 0
+            ? envSiteUrl
+            : window.location.origin;
+
+    return new URL("/auth/callback?next=/profile", baseUrl).toString();
+};
+
 const SignupPage = () => {
     const router = useRouter();
     const [email, setEmail] = useState<string>("");
@@ -47,6 +57,7 @@ const SignupPage = () => {
                 password,
                 options: {
                     data: displayName ? { display_name: displayName } : undefined,
+                    emailRedirectTo: buildEmailRedirectUrl(),
                 },
             });
             if (error) {

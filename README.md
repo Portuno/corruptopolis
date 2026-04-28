@@ -192,3 +192,11 @@ npm run start       # start the production server
 npm run lint        # next lint
 npm run typecheck   # tsc --noEmit
 ```
+
+## Deploy on Vercel
+
+Set the same env vars from `.env.local` in your Vercel project settings,
+especially `NEXT_PUBLIC_SITE_URL` with your production URL
+(for example `https://your-app.vercel.app` or your custom domain). This is
+used for auth confirmation callbacks so users land back on `/profile`
+correctly after signup.
