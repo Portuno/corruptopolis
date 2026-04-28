@@ -1,0 +1,172 @@
+# Corruptopolis - Reporte Integral (25 de abril)
+
+## 1) Estado general del proyecto
+
+- Proyecto: `corruptopolis` (Next.js + React + TypeScript).
+- Estado actual: jugable en frontend, con loop principal de partida funcionando.
+- Backend: API routes internas para Gemini, ElevenLabs (TTS/STT), feedback y guardado de partidas.
+- Persistencia: Supabase (auth, perfiles, partidas, feedback) con scripts SQL listos para correr manualmente.
+- Observacion importante: hay una discrepancia de documentacion; `README.md` menciona Next 15, pero `package.json` usa `next@16.2.4`.
+
+## 2) Arquitectura actual
+
+### Frontend
+
+- Entrada principal: `src/app/page.tsx` renderiza `GameFrame`.
+- Orquestacion UI del juego: `src/components/game/GameFrame.tsx`.
+- Estado de juego: `src/game/store.ts` con Zustand.
+- Motor de simulacion (logica pura): `src/game/*` (`grid`, `propagation`, `constants`, `types`, etc.).
+- Componentes clave:
+  - `HexGrid`, `Hud`, `ActionQueue`, `MemeSelector`, `CommunicationPanel`, `VoicePanel`.
+  - `BriefingModal` y `SettingsDrawer` para configuracion/keys.
+  - `ResultOverlay` para cierre de partida + persistencia de match.
+
+### Backend (API routes)
+
+- `src/app/api/gemini/route.ts`
+  - Recibe `voice_command` o `faction_message`.
+  - Valida body con Zod.
+  - Resuelve API key por prioridad y llama a Gemini.
+- `src/app/api/eleven/tts/route.ts`
+  - Convierte texto a audio.
+- `src/app/api/eleven/stt/route.ts`
+  - Convierte audio a texto (multipart, limite 6MB).
+- `src/app/api/matches/route.ts`
+  - Guarda resultado de partida en Supabase.
+- `src/app/api/feedback/route.ts`
+  - Guarda feedback del jugador.
+
+### Auth y perfil
+
+- Supabase auth integrado (incluye flujo anonimo + login/signup).
+- Ruta de perfil: `src/app/profile/page.tsx`.
+- Server action para actualizar perfil/keys: `src/app/profile/actions.ts`.
+- El perfil guarda:
+  - `display_name`
+  - `gemini_key_encrypted` (nombre de columna; hoy se guarda texto plano en esa columna)
+  - `eleven_key_encrypted` (igual observacion)
+
+## 3) Estado del gameplay (loop principal)
+
+En `src/game/store.ts`:
+
+- Fases activas:
+  - `PLAYER_ACTION`
+  - `CALCULATING`
+- Flujo:
+  1. `launchGame()` inicializa grilla, AP, estado derivado y tiempo de inicio.
+  2. Jugador despliega memes (`deployMeme`) y agrega diplomacia (`addDiplomacyAction`).
+  3. `executeTurn()` procesa:
+     - acciones diplomáticas,
+     - propagacion,
+     - friccion enemiga,
+     - recalculo de metricas y vibe.
+  4. Si llega al ultimo epoch, calcula victoria/derrota y setea `result`.
+  5. `ResultOverlay` persiste el match via `/api/matches`.
+
+Conclusión: el core loop esta implementado y funcional a nivel codigo.
+
+## 4) Supabase y base de datos
+
+Scripts listos:
+
+1. `supabase/001_schema.sql`
+   - Tablas: `profiles`, `matches`, `feedback`, `api_logs`.
+2. `supabase/002_rls_policies.sql`
+   - RLS para `profiles`, `matches`, `feedback`.
+   - `api_logs` sin policies publicas (intencional).
+3. `supabase/003_triggers.sql`
+   - Trigger `handle_new_user` para crear profile en alta de usuario.
+   - View `profile_stats` para metricas por usuario.
+
+Estado esperado:
+
+- Si estos scripts fueron ejecutados en orden, la app ya soporta historial y feedback con RLS.
+- Si no se ejecutaron, features dependientes de DB responden error controlado (503/401 segun caso).
+
+## 5) Manejo de API keys y fallback
+
+Resolucion de keys en `src/lib/api-keys.ts`:
+
+Prioridad actual:
+
+1. Key guardada en perfil del usuario.
+2. Key enviada por cliente (local/brought-by-user).
+3. Key de variables de entorno del servidor.
+4. Si no hay key: error explicito.
+
+Notas:
+
+- La variable default de Gemini es `gemini-2.5-flash` (`src/lib/env.ts`).
+- El sistema evita silencios: responde errores claros cuando faltan keys.
+
+## 6) Logging y observabilidad
+
+- Logging estructurado via `src/lib/logger.ts`.
+- `recordApiLog` (`src/lib/api-log.ts`) esta intencionalmente deshabilitado para DB:
+  - hoy los logs quedan en consola del servidor.
+- Rastro por `requestId` en endpoints.
+
+## 7) Dependencias y stack confirmado
+
+Según `package.json`:
+
+- Next `16.2.4`
+- React `19`
+- TypeScript `5.6.x`
+- Zustand `5`
+- Supabase JS `2.x` + `@supabase/ssr`
+- Zod
+- Tailwind `3.4`
+- Radix UI
+
+## 8) Riesgos / deuda tecnica detectada
+
+1. Nombres de columnas `*_encrypted` sugieren cifrado, pero el flujo actual no muestra cifrado real antes de persistir en `profiles`.
+2. `api_logs` existe en schema pero no se escribe (actualmente no-op).
+3. Desalineacion menor README vs version real de Next.
+4. Dependencia fuerte de llaves externas (Gemini/Eleven) para experiencia completa.
+
+## 9) Qué parece estar listo vs qué validar manualmente
+
+### Listo en codigo
+
+- Loop de juego completo.
+- UI principal de campaña.
+- Guardado de resultados condicionado por auth/supabase.
+- Feedback persistente.
+- Proxy server-side para IA/audio.
+
+### Validar en entorno real (manual)
+
+- Que Supabase tenga scripts SQL aplicados en orden.
+- Que provider de auth anonima este habilitado.
+- Que `.env.local` tenga llaves correctas para todas las features.
+- Que TTS/STT funcionen con cuota/permisos de ElevenLabs.
+- Que Gemini responda correctamente con el modelo configurado.
+
+## 10) Checklist para continuar desarrollo
+
+1. Unificar documentacion de versiones (README vs package).
+2. Definir si las keys de perfil deben cifrarse de verdad en backend.
+3. Decidir si reactivar persistencia de `api_logs` en DB.
+4. Agregar tests (al menos smoke tests de endpoints y flujo de partida).
+5. Priorizar roadmap:
+   - balanceo de propagacion/friccion,
+   - mejoras UX de onboarding,
+   - telemetria operativa.
+
+## 11) Prompt sugerido para otra IA (handoff)
+
+Usar este bloque al iniciar otro chat:
+
+"Estas continuando el desarrollo de Corruptopolis (Next.js 16 + React 19 + TS + Zustand + Supabase).  
+El loop de juego ya funciona y vive en `src/game/store.ts` + `src/components/game/GameFrame.tsx`.  
+Las APIs activas son `/api/gemini`, `/api/eleven/tts`, `/api/eleven/stt`, `/api/matches`, `/api/feedback`.  
+Supabase usa scripts `supabase/001_schema.sql`, `002_rls_policies.sql`, `003_triggers.sql` (manuales).  
+Prioridades actuales: revisar seguridad de almacenamiento de API keys en perfil, decidir persistencia de `api_logs`, y alinear documentacion/stack.  
+Propon el siguiente milestone con tareas concretas en orden de impacto, luego implementa." 
+
+---
+
+Reporte generado para continuidad de desarrollo el 25 de abril.

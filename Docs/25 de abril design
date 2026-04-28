@@ -1,0 +1,238 @@
+# Corruptopolis - Documento de Diseño y Gameplay (25 de abril)
+
+## 1) Visión de diseño
+
+Corruptopolis es una simulación estratégica de guerra narrativa en tablero hexagonal.  
+El jugador encarna al `MCO` (Meme Commander Officer), una fuerza insurgente memética que intenta quebrar la hegemonía de la `Collaborative Corruption Matrix`.
+
+Objetivo de diseño:
+
+- Mezclar estrategia por turnos + lectura política del mapa + fantasía de comando propagandístico.
+- Crear tensión entre decisiones tácticas simples y consecuencias sistémicas complejas.
+- Generar una experiencia "rápida de aprender, difícil de dominar".
+
+## 2) Fantasía del jugador (player fantasy)
+
+La fantasía central no es "pelear unidades", sino:
+
+- Diseñar marcos narrativos.
+- Capturar distritos ideológicos.
+- Empujar el clima social hacia una dominancia favorable.
+- Resistir fricción del establishment a lo largo de 12 epochs.
+
+El juego se siente como una campaña de opinión pública en tiempo acelerado.
+
+## 3) Core loop de experiencia (alto nivel)
+
+1. Preparas tu turno.
+2. Inviertes AP en memes tácticos.
+3. Opcionalmente agregas acciones diplomáticas por facción.
+4. Cierras epoch y observas propagación + contraataque enemigo.
+5. Recalculas dominancia global y control territorial.
+6. Repetición hasta final de campaña (12 epochs).
+7. Resolución de victoria/derrota + guardado de partida.
+
+Este loop ya está implementado y jugable.
+
+## 4) Cómo se juega (flujo del usuario)
+
+### Inicio de campaña
+
+- Se abre la escena principal con:
+  - tablero hexagonal,
+  - HUD de estado,
+  - cola de acciones,
+  - paneles de comunicación/voz,
+  - selector de memes.
+- Al lanzar campaña se inicializa grilla y métricas de estado.
+
+### Turno del jugador
+
+- El jugador usa AP para desplegar influencia en nodos del mapa.
+- Puede elegir modo de meme:
+  - estándar (costo bajo),
+  - fortify (costo mayor, efecto defensivo temporal).
+- Puede sumar acciones diplomáticas por facción con modificadores.
+- Cuando decide cerrar turno, ejecuta epoch (Enter o Space cuando corresponde).
+
+### Resolución del sistema
+
+- Se procesan acciones diplomáticas.
+- Corre propagación en la red.
+- Se aplica fricción enemiga.
+- Se recalculan:
+  - dominance promedio,
+  - distritos controlados,
+  - etiqueta de vibe y matriz.
+
+### Final de campaña
+
+- En el último epoch se determina:
+  - victoria (`avg > 0.5`),
+  - derrota en caso contrario.
+- Se muestra overlay final con métricas y narrativa contextual.
+- Se intenta persistir resultado en historial.
+
+## 5) Workflow jugable por pantalla
+
+## Pantalla principal (`GameFrame`)
+
+- Header con identidad del juego + acceso a usuario/settings.
+- Columna izquierda:
+  - Action Queue,
+  - Communication Panel,
+  - Voice Panel.
+- Centro:
+  - HUD,
+  - HexGrid.
+- Columna derecha:
+  - MemeSelector,
+  - Legend.
+- Overlays:
+  - Briefing inicial,
+  - Result final.
+
+## Flujo de comandos/acciones
+
+- Inputs directos:
+  - click sobre celdas para aplicar meme,
+  - atajos de teclado para cerrar epoch,
+  - mensajes de facción y comandos por voz.
+- Inputs IA:
+  - Gemini evalúa contenido de mensajes/comandos.
+- Inputs audio:
+  - STT para transcribir,
+  - TTS para feedback inmersivo.
+
+## 6) Gamificación actual (mecánicas motivacionales)
+
+### 1) Progreso claro por campaña
+
+- 12 epochs con sensación de cuenta regresiva.
+- Barra/contador de epoch genera urgencia y ritmo.
+
+### 2) Recursos limitados (AP)
+
+- Forzan priorización táctica.
+- Hacen que cada clic tenga costo real.
+
+### 3) Métricas legibles
+
+- Dominance global.
+- Distritos controlados.
+- Estado de vibe/matriz.
+
+Esto da feedback inmediato de performance.
+
+### 4) Resolución dramática
+
+- Pantalla de victoria/derrota con narrativa diegética.
+- Conversión de resultado en "historial de campañas" persistente.
+
+### 5) Meta-progresión social ligera
+
+- Perfil de operador con estadísticas (wins/losses/win rate).
+- Esto aporta continuidad entre sesiones.
+
+## 7) Sistemas funcionales clave (en términos de diseño)
+
+## Sistema de influencia territorial
+
+- Mapa hexagonal como campo de batalla discursivo.
+- Cada nodo representa un microterritorio de opinión.
+- La dominancia no es binaria pura: se mueve en gradientes.
+
+## Sistema de fricción enemiga
+
+- Evita snowball trivial.
+- Simula resiliencia institucional del rival.
+
+## Sistema diplomático por facciones
+
+- Permite jugar "soft power" además de intervención directa.
+- Abre decisión entre táctica inmediata vs posicionamiento estratégico.
+
+## Sistema de asistencia IA (Gemini)
+
+- Interpreta comandos de voz.
+- Evalúa mensajes para producir modificadores diplomáticos.
+- Refuerza fantasía de "comando estratégico asistido".
+
+## Sistema de audio inmersivo (ElevenLabs)
+
+- TTS para frases de evento/estado.
+- STT para interacción por voz.
+- Incrementa presencia y teatralidad política del juego.
+
+## 8) Diseño de UX/UI actual
+
+Fortalezas:
+
+- Layout tri-panel claro (control, mapa, apoyo).
+- Terminología consistente con el universo ficcional.
+- Estado del turno y métricas visibles.
+- Componentización sana para iterar sin romper todo.
+
+Puntos mejorables:
+
+- Jerarquía visual del "siguiente mejor paso" podría ser más explícita.
+- Onboarding inicial puede guiar mejor primer turno para usuarios nuevos.
+- Algunas decisiones de alto impacto podrían tener previsualización.
+
+## 9) Funciones y acciones disponibles para el jugador
+
+### Acciones directas
+
+- Desplegar meme estándar.
+- Desplegar meme fortificado.
+- Agregar/remover acciones diplomáticas en queue.
+- Ejecutar turno/epoch.
+- Reiniciar campaña al finalizar.
+
+### Acciones de soporte
+
+- Configurar llaves/API en settings/perfil.
+- Enviar feedback in-app.
+- Consultar historial en perfil (si autenticado y con Supabase activo).
+
+### Acciones por voz/comunicación
+
+- Enviar comando de voz estratégico.
+- Redactar mensaje por facción para evaluación de impacto.
+
+## 10) Workflow de datos que impacta diseño
+
+1. Jugador ejecuta acción.
+2. Estado local (Zustand) muta.
+3. Si hay interacción IA/audio, se invocan API routes server-side.
+4. Resultado vuelve al cliente y altera feedback de UX.
+5. Al final, resultado se guarda en `matches` (si auth/supabase disponibles).
+
+Implicación de diseño:
+
+- El juego base puede correr sin todas las integraciones.
+- Las integraciones enriquecen la capa expresiva e inmersiva.
+
+## 11) Oportunidades de diseño (siguiente milestone)
+
+1. Onboarding narrativo de 90 segundos:
+   - tutorial mínimo guiado por objetivos.
+2. Claridad de decisión:
+   - resaltar "acciones recomendadas" según estado del mapa.
+3. Mayor profundidad en diplomacia:
+   - consecuencias persistentes por facción en epochs posteriores.
+4. Mejora de legibilidad táctica:
+   - overlays de calor de influencia y riesgo por nodo.
+5. Cadencia emocional:
+   - eventos inter-epoch con mini dilemas narrativos.
+
+## 12) Prompt sugerido para otra IA (enfoque diseño)
+
+"Actúa como Game Designer Senior para Corruptopolis.  
+Contexto: juego de estrategia narrativa por turnos en hex grid, 12 epochs, AP limitado, propagación + fricción enemiga, diplomacia por facciones, soporte IA/voz.  
+Necesito que propongas mejoras concretas de diseño en 3 capas: onboarding, profundidad táctica y retención.  
+Entrega: backlog priorizado (quick wins vs high impact), reglas de diseño accionables y cambios de UX específicos por componente." 
+
+---
+
+Documento orientado a diseño, workflow y gameplay para continuidad el 25 de abril.

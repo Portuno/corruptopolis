@@ -1,0 +1,2804 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Corruptópolis — Hyperpolis Simulation Engine</title>
+        <style>
+            /* ═══════════════════════════════════════════════════════
+   THEME SYSTEM — CSS Custom Properties
+═══════════════════════════════════════════════════════ */
+            :root {
+                --bg-base: #0a0e17;
+                --bg-surface: #111827;
+                --bg-panel: rgba(17, 24, 39, 0.92);
+                --bg-deep: rgba(5, 7, 13, 0.97);
+                --border-subtle: rgba(56, 189, 248, 0.12);
+                --border-mid: rgba(56, 189, 248, 0.26);
+                --border-strong: rgba(56, 189, 248, 0.55);
+                --text-primary: #e2e8f0;
+                --text-secondary: #94a3b8;
+                --text-muted: #4a5f72;
+                --accent-player: #38bdf8;
+                --accent-player-glow: rgba(56, 189, 248, 0.32);
+                --accent-player-bg: rgba(56, 189, 248, 0.08);
+                --accent-enemy: #f85149;
+                --accent-enemy-glow: rgba(248, 81, 73, 0.3);
+                --accent-confirm: #3fb950;
+                --accent-confirm-glow: rgba(63, 185, 80, 0.24);
+                --accent-confirm-bg: rgba(63, 185, 80, 0.07);
+                --accent-warn: #d29922;
+                --accent-calc: #e07725;
+                --accent-win: #3dd68c;
+                --accent-win-glow: rgba(61, 214, 140, 0.3);
+                --accent-lose: #f85149;
+                --accent-lose-glow: rgba(248, 81, 73, 0.3);
+                --canvas-bg: #080c14;
+                --canvas-hex-border: #1a2235;
+                --canvas-pulse-border: rgba(56, 189, 248, 0.88);
+                --canvas-fortify: rgba(56, 189, 248, 0.82);
+                --pal-enemy: 220, 32, 32;
+                --pal-neutral: 96, 102, 115;
+                --pal-player: 14, 116, 180;
+                --scanline: rgba(56, 189, 248, 0.016);
+            }
+            [data-theme="dim"] {
+                --bg-base: #22272e;
+                --bg-surface: #2d333b;
+                --bg-panel: rgba(45, 51, 59, 0.92);
+                --bg-deep: rgba(26, 31, 38, 0.97);
+                --border-subtle: rgba(83, 155, 245, 0.12);
+                --border-mid: rgba(83, 155, 245, 0.25);
+                --border-strong: rgba(83, 155, 245, 0.54);
+                --text-primary: #cdd9e5;
+                --text-secondary: #768390;
+                --text-muted: #546068;
+                --accent-player: #539bf5;
+                --accent-player-glow: rgba(83, 155, 245, 0.26);
+                --accent-player-bg: rgba(83, 155, 245, 0.08);
+                --accent-enemy: #e5534b;
+                --accent-enemy-glow: rgba(229, 83, 75, 0.26);
+                --accent-confirm: #46954a;
+                --accent-confirm-glow: rgba(70, 149, 74, 0.22);
+                --accent-confirm-bg: rgba(70, 149, 74, 0.07);
+                --accent-warn: #c69026;
+                --accent-calc: #d07720;
+                --accent-win: #3ac47c;
+                --accent-win-glow: rgba(58, 196, 124, 0.26);
+                --accent-lose: #e5534b;
+                --accent-lose-glow: rgba(229, 83, 75, 0.26);
+                --canvas-bg: #1e2430;
+                --canvas-hex-border: #2d3a50;
+                --canvas-pulse-border: rgba(130, 195, 255, 0.8);
+                --canvas-fortify: rgba(70, 195, 235, 0.78);
+                --pal-enemy: 205, 40, 40;
+                --pal-neutral: 94, 100, 112;
+                --pal-player: 36, 84, 215;
+                --scanline: rgba(83, 155, 245, 0.02);
+            }
+            [data-theme="light"] {
+                --bg-base: #f6f8fa;
+                --bg-surface: #ffffff;
+                --bg-panel: rgba(255, 255, 255, 0.96);
+                --bg-deep: rgba(246, 248, 250, 0.98);
+                --border-subtle: rgba(9, 105, 218, 0.14);
+                --border-mid: rgba(9, 105, 218, 0.28);
+                --border-strong: rgba(9, 105, 218, 0.6);
+                --text-primary: #1f2328;
+                --text-secondary: #656d76;
+                --text-muted: #8c949e;
+                --accent-player: #0969da;
+                --accent-player-glow: rgba(9, 105, 218, 0.16);
+                --accent-player-bg: rgba(9, 105, 218, 0.06);
+                --accent-enemy: #cf222e;
+                --accent-enemy-glow: rgba(207, 34, 46, 0.16);
+                --accent-confirm: #1a7f37;
+                --accent-confirm-glow: rgba(26, 127, 55, 0.16);
+                --accent-confirm-bg: rgba(26, 127, 55, 0.05);
+                --accent-warn: #9a6700;
+                --accent-calc: #bc4c00;
+                --accent-win: #1a7f37;
+                --accent-win-glow: rgba(26, 127, 55, 0.2);
+                --accent-lose: #cf222e;
+                --accent-lose-glow: rgba(207, 34, 46, 0.2);
+                --canvas-bg: #e8ecf0;
+                --canvas-hex-border: #c4c9d1;
+                --canvas-pulse-border: rgba(9, 105, 218, 0.8);
+                --canvas-fortify: rgba(1, 115, 196, 0.72);
+                --pal-enemy: 182, 18, 18;
+                --pal-neutral: 145, 148, 158;
+                --pal-player: 18, 70, 188;
+                --scanline: rgba(0, 0, 0, 0.01);
+            }
+
+            /* ═══════════════════════════════════════════════════════
+   RESET & BASE
+═══════════════════════════════════════════════════════ */
+            *,
+            *::before,
+            *::after {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+            html,
+            body {
+                height: 100%;
+                overflow: hidden;
+                font-family: "Courier New", Courier, monospace;
+                background: var(--bg-base);
+                color: var(--text-primary);
+                font-size: 14px;
+                line-height: 1.5;
+            }
+
+            /* ═══════════════════════════════════════════════════════
+   LAUNCH SCREEN
+═══════════════════════════════════════════════════════ */
+            #screen-newgame {
+                height: 100vh;
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                padding: 16px 20px;
+                gap: 10px;
+                background: var(--bg-base);
+            }
+            #ng-title {
+                font-size: 36px;
+                letter-spacing: 12px;
+                text-transform: uppercase;
+                color: var(--accent-player);
+                text-shadow:
+                    0 0 28px var(--accent-player-glow),
+                    0 0 70px rgba(56, 189, 248, 0.12);
+                text-align: center;
+                line-height: 1.1;
+            }
+            #ng-subtitle {
+                font-size: 11px;
+                letter-spacing: 2px;
+                color: var(--text-muted);
+                text-align: center;
+            }
+            .ng-rule {
+                width: 500px;
+                max-width: 100%;
+                height: 1px;
+                background: var(--border-subtle);
+            }
+            #ng-brief {
+                max-width: 540px;
+                width: 100%;
+                font-size: 14px;
+                line-height: 1.65;
+                letter-spacing: 0;
+                color: var(--text-secondary);
+            }
+            #ng-brief p {
+                margin-bottom: 8px;
+            }
+            #ng-brief p:last-of-type {
+                margin-bottom: 6px;
+            }
+            #ng-brief strong {
+                color: var(--text-primary);
+            }
+            #ng-brief em {
+                color: var(--accent-player);
+                font-style: normal;
+            }
+            #ng-brief .warn {
+                display: block;
+                color: #f59e0b;
+                border-left: 2px solid #f59e0b;
+                padding-left: 10px;
+                opacity: 0.82;
+                font-size: 13px;
+            }
+            #ng-cadence-label {
+                font-size: 10px;
+                letter-spacing: 3px;
+                color: var(--text-muted);
+                text-transform: uppercase;
+            }
+            #ng-cadences {
+                display: flex;
+                gap: 10px;
+            }
+            .cadence-card {
+                width: 148px;
+                padding: 11px 10px;
+                border-radius: 5px;
+                border: 1px solid var(--border-subtle);
+                background: var(--bg-surface);
+                text-align: center;
+                transition: all 0.14s;
+                position: relative;
+            }
+            .cadence-card.selectable {
+                cursor: pointer;
+            }
+            .cadence-card.selectable:hover {
+                border-color: var(--border-mid);
+            }
+            .cadence-card.active {
+                border-color: var(--accent-player);
+                background: var(--accent-player-bg);
+            }
+            .cadence-card.locked {
+                opacity: 0.35;
+                cursor: not-allowed;
+            }
+            .cadence-card .c-turns {
+                font-size: 22px;
+                font-weight: bold;
+                color: var(--text-primary);
+                display: block;
+                margin-bottom: 1px;
+            }
+            .cadence-card .c-label {
+                font-size: 9px;
+                letter-spacing: 2px;
+                color: var(--text-muted);
+                text-transform: uppercase;
+                display: block;
+                margin-bottom: 5px;
+            }
+            .cadence-card .c-desc {
+                font-size: 11px;
+                color: var(--text-secondary);
+                line-height: 1.4;
+                letter-spacing: 0;
+            }
+            .cadence-card .c-lock {
+                position: absolute;
+                top: 6px;
+                right: 8px;
+                font-size: 12px;
+                opacity: 0.5;
+            }
+            .cadence-card .c-proto {
+                display: inline-block;
+                margin-top: 5px;
+                font-size: 8px;
+                letter-spacing: 1px;
+                background: var(--accent-player-bg);
+                border: 1px solid var(--border-mid);
+                border-radius: 2px;
+                padding: 1px 5px;
+                color: var(--accent-player);
+            }
+
+            /* API keys */
+            #ng-api-section {
+                max-width: 520px;
+                width: 100%;
+                display: flex;
+                flex-direction: column;
+                gap: 6px;
+            }
+            .api-section-label {
+                font-size: 10px;
+                letter-spacing: 2px;
+                color: var(--text-muted);
+                text-transform: uppercase;
+            }
+            .key-row {
+                display: flex;
+                align-items: center;
+                gap: 7px;
+            }
+            .key-label {
+                font-size: 11px;
+                letter-spacing: 0.5px;
+                color: var(--text-muted);
+                width: 80px;
+                flex-shrink: 0;
+            }
+            .key-input {
+                flex: 1;
+                background: rgba(56, 189, 248, 0.04);
+                border: 1px solid var(--border-subtle);
+                border-radius: 4px;
+                padding: 6px 10px;
+                font-family: "Courier New", Courier, monospace;
+                font-size: 12px;
+                color: var(--text-primary);
+                letter-spacing: 0;
+                outline: none;
+                transition:
+                    border-color 0.15s,
+                    box-shadow 0.15s;
+            }
+            .key-input::placeholder {
+                color: var(--text-muted);
+                opacity: 0.55;
+            }
+            .key-input:focus {
+                border-color: var(--accent-player);
+                box-shadow: 0 0 0 2px var(--accent-player-bg);
+            }
+            .key-eye {
+                background: none;
+                border: none;
+                color: var(--text-muted);
+                cursor: pointer;
+                font-size: 13px;
+                padding: 3px;
+                opacity: 0.65;
+                transition: opacity 0.14s;
+            }
+            .key-eye:hover {
+                opacity: 1;
+            }
+            #ng-start {
+                background: var(--accent-player);
+                border: none;
+                border-radius: 5px;
+                padding: 13px 56px;
+                font-family: "Courier New", Courier, monospace;
+                font-size: 13px;
+                font-weight: bold;
+                letter-spacing: 4px;
+                color: #060c16;
+                cursor: pointer;
+                text-transform: uppercase;
+                transition: all 0.15s;
+                box-shadow:
+                    0 0 22px var(--accent-player-glow),
+                    0 4px 16px rgba(0, 0, 0, 0.5);
+            }
+            #ng-start:hover {
+                box-shadow:
+                    0 0 40px var(--accent-player-glow),
+                    0 6px 22px rgba(0, 0, 0, 0.6);
+                transform: translateY(-1px);
+            }
+            #ng-start:active {
+                transform: translateY(0);
+            }
+
+            /* ═══════════════════════════════════════════════════════
+   MAIN GAME LAYOUT
+═══════════════════════════════════════════════════════ */
+            #screen-game {
+                display: none;
+                flex-direction: row;
+                height: 100vh;
+                width: 100%;
+                background: var(--bg-base);
+                background-image:
+                    repeating-linear-gradient(
+                        0deg,
+                        transparent,
+                        transparent 2px,
+                        var(--scanline) 2px,
+                        var(--scanline) 4px
+                    ),
+                    repeating-linear-gradient(
+                        90deg,
+                        transparent,
+                        transparent 2px,
+                        var(--scanline) 2px,
+                        var(--scanline) 4px
+                    );
+            }
+
+            /* ── Sidebar ─────────────────────────────────────────── */
+            #sidebar {
+                width: 276px;
+                min-width: 256px;
+                flex-shrink: 0;
+                display: flex;
+                flex-direction: column;
+                padding: 10px 13px;
+                gap: 0;
+                border-right: 1px solid var(--border-subtle);
+                overflow-y: auto;
+                background: var(--bg-base);
+            }
+            .sb-divider {
+                height: 1px;
+                background: var(--border-subtle);
+                margin: 7px 0;
+                flex-shrink: 0;
+            }
+            .sb-section-label {
+                font-size: 9px;
+                letter-spacing: 2px;
+                color: var(--text-muted);
+                text-transform: uppercase;
+                margin-bottom: 5px;
+                flex-shrink: 0;
+            }
+
+            /* Sidebar header */
+            #sb-header {
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                padding-bottom: 8px;
+                border-bottom: 1px solid var(--border-subtle);
+                margin-bottom: 7px;
+                flex-shrink: 0;
+            }
+            #sb-title {
+                font-size: 12px;
+                letter-spacing: 3px;
+                text-transform: uppercase;
+                color: var(--text-primary);
+                line-height: 1.35;
+            }
+            #btn-settings-toggle {
+                background: none;
+                border: none;
+                color: var(--text-muted);
+                cursor: pointer;
+                font-size: 14px;
+                padding: 1px 3px;
+                transition: color 0.14s;
+                flex-shrink: 0;
+            }
+            #btn-settings-toggle:hover {
+                color: var(--text-secondary);
+            }
+
+            /* In-game settings */
+            #settings-inline {
+                display: none;
+                flex-direction: column;
+                gap: 5px;
+                padding-bottom: 8px;
+                border-bottom: 1px solid var(--border-subtle);
+                margin-bottom: 7px;
+            }
+            #settings-inline.open {
+                display: flex;
+            }
+            #btn-save-keys {
+                align-self: flex-start;
+                background: none;
+                border: 1px solid var(--border-mid);
+                border-radius: 3px;
+                padding: 4px 11px;
+                margin-top: 2px;
+                font-family: "Courier New", Courier, monospace;
+                font-size: 10px;
+                letter-spacing: 1px;
+                color: var(--text-secondary);
+                cursor: pointer;
+                text-transform: uppercase;
+                transition: all 0.14s;
+            }
+            #btn-save-keys:hover {
+                border-color: var(--accent-player);
+                color: var(--accent-player);
+            }
+
+            /* Theme switcher */
+            #theme-switcher {
+                display: flex;
+                border: 1px solid var(--border-subtle);
+                border-radius: 4px;
+                overflow: hidden;
+                margin-bottom: 8px;
+                flex-shrink: 0;
+            }
+            .theme-btn {
+                flex: 1;
+                background: var(--bg-surface);
+                border: none;
+                border-right: 1px solid var(--border-subtle);
+                padding: 5px 0;
+                font-family: "Courier New", Courier, monospace;
+                font-size: 10px;
+                letter-spacing: 1px;
+                color: var(--text-muted);
+                cursor: pointer;
+                transition:
+                    background 0.12s,
+                    color 0.12s;
+                text-transform: uppercase;
+            }
+            .theme-btn:last-child {
+                border-right: none;
+            }
+            .theme-btn:hover:not(.active) {
+                background: var(--bg-panel);
+                color: var(--text-secondary);
+            }
+            .theme-btn.active {
+                background: var(--accent-player-bg);
+                color: var(--accent-player);
+            }
+
+            /* Epoch strip */
+            .es-row {
+                display: flex;
+                justify-content: space-between;
+                align-items: baseline;
+            }
+            .es-month {
+                font-size: 15px;
+                font-weight: bold;
+                color: var(--text-primary);
+                letter-spacing: 1px;
+            }
+            .es-counter {
+                font-size: 11px;
+                color: var(--accent-player);
+                letter-spacing: 0;
+            }
+            .es-bar-wrap {
+                margin-top: 6px;
+                height: 2px;
+                background: var(--border-subtle);
+                border-radius: 1px;
+                overflow: hidden;
+            }
+            .es-bar-fill {
+                height: 100%;
+                background: var(--accent-player);
+                border-radius: 1px;
+                transition: width 0.4s ease;
+            }
+
+            /* vibe-val coloring */
+            #vibe-val {
+                margin-left: 4px;
+                font-weight: bold;
+                transition: color 0.3s;
+                color: var(--text-primary);
+            }
+            #vibe-val.dominance {
+                color: var(--accent-player);
+            }
+            #vibe-val.friction {
+                color: var(--text-secondary);
+            }
+            #vibe-val.hostile {
+                color: var(--accent-enemy);
+            }
+
+            /* ACTION PANEL — only elevated section */
+            #action-panel {
+                background: var(--bg-surface);
+                border: 1px solid var(--border-mid);
+                border-radius: 6px;
+                padding: 9px 11px;
+                display: flex;
+                flex-direction: column;
+                gap: 6px;
+                flex-shrink: 0;
+            }
+            .ap-label {
+                font-size: 9px;
+                letter-spacing: 2px;
+                color: var(--text-muted);
+                text-transform: uppercase;
+            }
+            #ap-meme-row {
+                display: flex;
+                gap: 6px;
+            }
+            .meme-card {
+                flex: 1;
+                background: var(--bg-base);
+                border: 1px solid var(--border-subtle);
+                border-radius: 4px;
+                padding: 6px 6px;
+                font-family: "Courier New", Courier, monospace;
+                font-size: 11px;
+                letter-spacing: 0;
+                color: var(--text-secondary);
+                cursor: pointer;
+                transition: all 0.12s;
+                line-height: 1.4;
+            }
+            .meme-card:hover:not(:disabled) {
+                color: var(--text-primary);
+                border-color: var(--border-mid);
+            }
+            .meme-card.selected {
+                color: var(--accent-player);
+                border-color: var(--accent-player);
+                background: var(--accent-player-bg);
+            }
+            .meme-card:disabled {
+                opacity: 0.35;
+                cursor: not-allowed;
+            }
+            #ap-stats-row {
+                display: flex;
+                gap: 12px;
+                align-items: center;
+            }
+            .ap-stat {
+                font-size: 12px;
+                color: var(--text-muted);
+                letter-spacing: 0;
+                white-space: nowrap;
+            }
+            .ap-stat .val {
+                color: var(--text-primary);
+            }
+            #ap-display.flash-red .val {
+                color: var(--accent-enemy);
+            }
+            #phase-val {
+                color: var(--accent-warn);
+            }
+            #phase-val.calc {
+                color: var(--accent-calc);
+            }
+            #btn-end-epoch {
+                width: 100%;
+                background: var(--accent-confirm-bg);
+                border: 1px solid var(--accent-confirm);
+                border-radius: 4px;
+                padding: 8px;
+                font-family: "Courier New", Courier, monospace;
+                font-size: 11px;
+                letter-spacing: 2px;
+                color: var(--accent-confirm);
+                cursor: pointer;
+                text-transform: uppercase;
+                transition: all 0.12s;
+            }
+            #btn-end-epoch:hover:not(:disabled) {
+                box-shadow: 0 0 12px var(--accent-confirm-glow);
+            }
+            #btn-end-epoch:disabled {
+                opacity: 0.32;
+                cursor: not-allowed;
+            }
+            #hotkey-hint {
+                font-size: 11px;
+                color: var(--text-muted);
+                text-align: center;
+                letter-spacing: 0;
+            }
+
+            /* ── Communication Channel ───────────────────────────── */
+            .comm-select {
+                width: 100%;
+                background: var(--bg-surface);
+                border: 1px solid var(--border-subtle);
+                border-radius: 4px;
+                padding: 5px 24px 5px 8px;
+                font-family: "Courier New", monospace;
+                font-size: 11px;
+                color: var(--text-primary);
+                outline: none;
+                cursor: pointer;
+                appearance: none;
+                -webkit-appearance: none;
+                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath fill='%234a5f72' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E");
+                background-repeat: no-repeat;
+                background-position: right 8px center;
+                margin-bottom: 5px;
+            }
+            .comm-select:focus {
+                border-color: var(--accent-player);
+            }
+            .comm-textarea {
+                width: 100%;
+                background: rgba(56, 189, 248, 0.04);
+                border: 1px solid var(--border-subtle);
+                border-radius: 4px;
+                padding: 6px 9px;
+                font-family: "Courier New", monospace;
+                font-size: 11px;
+                color: var(--text-primary);
+                resize: none;
+                height: 56px;
+                outline: none;
+                line-height: 1.45;
+                letter-spacing: 0;
+                transition:
+                    border-color 0.15s,
+                    box-shadow 0.15s;
+                margin-bottom: 5px;
+            }
+            .comm-textarea:focus {
+                border-color: var(--accent-player);
+                box-shadow: 0 0 0 2px var(--accent-player-bg);
+            }
+            .comm-textarea::placeholder {
+                color: var(--text-muted);
+                opacity: 0.6;
+            }
+            #comm-row {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            #btn-comm-send {
+                flex-shrink: 0;
+                background: var(--accent-player-bg);
+                border: 1px solid var(--accent-player);
+                border-radius: 4px;
+                padding: 5px 10px;
+                font-family: "Courier New", monospace;
+                font-size: 9px;
+                letter-spacing: 1px;
+                color: var(--accent-player);
+                cursor: pointer;
+                text-transform: uppercase;
+                transition: all 0.14s;
+                white-space: nowrap;
+            }
+            #btn-comm-send:hover:not(:disabled) {
+                box-shadow: 0 0 8px var(--accent-player-glow);
+            }
+            #btn-comm-send:disabled {
+                opacity: 0.4;
+                cursor: not-allowed;
+            }
+            #comm-status {
+                font-size: 10px;
+                color: var(--text-muted);
+                letter-spacing: 0;
+                flex: 1;
+                line-height: 1.3;
+            }
+
+            /* ── Action Queue ─────────────────────────────────────── */
+            #queue-list {
+                display: flex;
+                flex-direction: column;
+                gap: 3px;
+            }
+            .queue-empty {
+                font-size: 10px;
+                color: var(--text-muted);
+                font-style: italic;
+                letter-spacing: 0;
+            }
+            .queue-item {
+                display: flex;
+                align-items: center;
+                gap: 5px;
+                background: var(--bg-surface);
+                border: 1px solid var(--border-subtle);
+                border-radius: 3px;
+                padding: 4px 7px;
+                font-size: 10px;
+            }
+            .qi-badge {
+                font-size: 7px;
+                letter-spacing: 1px;
+                text-transform: uppercase;
+                padding: 1px 4px;
+                border-radius: 2px;
+                flex-shrink: 0;
+            }
+            .qi-badge-diplo {
+                background: rgba(56, 189, 248, 0.12);
+                color: var(--accent-player);
+                border: 1px solid var(--border-subtle);
+            }
+            .qi-label {
+                flex: 1;
+                color: var(--text-secondary);
+                letter-spacing: 0;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .qi-mod-pos {
+                color: var(--accent-confirm);
+                font-weight: bold;
+            }
+            .qi-mod-neg {
+                color: var(--accent-enemy);
+                font-weight: bold;
+            }
+            .qi-remove {
+                background: none;
+                border: none;
+                color: var(--text-muted);
+                cursor: pointer;
+                font-size: 12px;
+                padding: 0 2px;
+                opacity: 0.55;
+                transition: opacity 0.12s;
+                flex-shrink: 0;
+            }
+            .qi-remove:hover {
+                opacity: 1;
+            }
+
+            /* Voice panel */
+            #voice-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 3px;
+            }
+            #btn-mic {
+                background: var(--bg-surface);
+                border: 1px solid var(--border-mid);
+                border-radius: 50%;
+                width: 26px;
+                height: 26px;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 12px;
+                transition: all 0.12s;
+                flex-shrink: 0;
+            }
+            #btn-mic:hover {
+                border-color: var(--border-strong);
+            }
+            #btn-mic.recording {
+                border-color: var(--accent-enemy);
+                animation: mic-pulse 1s ease-in-out infinite;
+            }
+            @keyframes mic-pulse {
+                0%,
+                100% {
+                    box-shadow: 0 0 4px var(--accent-enemy-glow);
+                }
+                50% {
+                    box-shadow: 0 0 12px var(--accent-enemy-glow);
+                }
+            }
+            #voice-status {
+                font-size: 11px;
+                color: var(--text-muted);
+                letter-spacing: 0;
+                min-height: 14px;
+            }
+            #voice-log {
+                font-size: 11px;
+                color: var(--text-muted);
+                line-height: 1.5;
+                letter-spacing: 0;
+                max-height: 34px;
+                overflow: hidden;
+            }
+            #voice-log .vl-cmd {
+                color: var(--accent-player);
+            }
+            #voice-log .vl-exec {
+                color: var(--accent-confirm);
+            }
+            #voice-log .vl-ai {
+                color: var(--accent-warn);
+            }
+            #voice-log .vl-note {
+                color: var(--text-muted);
+            }
+
+            /* Legend */
+            #legend {
+                display: flex;
+                flex-direction: column;
+                gap: 6px;
+                flex-shrink: 0;
+            }
+            #legend-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 3px 6px;
+            }
+            .legend-item {
+                display: flex;
+                align-items: center;
+                gap: 5px;
+                white-space: nowrap;
+            }
+            .legend-swatch {
+                width: 11px;
+                height: 11px;
+                border-radius: 2px;
+                flex-shrink: 0;
+                border: 1px solid var(--border-subtle);
+            }
+            .legend-item span {
+                font-size: 11px;
+                color: var(--text-muted);
+                letter-spacing: 0;
+            }
+            #legend-elements {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 4px 10px;
+                font-size: 10px;
+                letter-spacing: 0;
+                color: var(--text-muted);
+            }
+            .el-badge {
+                display: flex;
+                align-items: center;
+                gap: 3px;
+                white-space: nowrap;
+            }
+            .el-letter {
+                font-weight: bold;
+                font-size: 11px;
+            }
+
+            /* ── Canvas Area ─────────────────────────────────────── */
+            #canvas-area {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                padding: 10px;
+                min-width: 0;
+                overflow: hidden;
+                gap: 5px;
+            }
+
+            /* Map header stats */
+            #map-header {
+                display: flex;
+                gap: 24px;
+                align-items: center;
+                width: 100%;
+                max-width: 720px;
+                flex-shrink: 0;
+            }
+            .map-stat {
+                font-size: 11px;
+                letter-spacing: 1px;
+                color: var(--text-muted);
+                white-space: nowrap;
+                text-transform: uppercase;
+            }
+            .map-val {
+                color: var(--text-primary);
+                margin-left: 4px;
+            }
+
+            #canvas-wrapper {
+                position: relative;
+                border: 1px solid var(--border-subtle);
+                border-radius: 5px;
+                overflow: hidden;
+            }
+            #grid {
+                display: block;
+                cursor: crosshair;
+                width: 100%;
+                height: 100%;
+            }
+
+            /* Result overlay */
+            #result-overlay {
+                display: none;
+                position: fixed;
+                inset: 0;
+                z-index: 200;
+                background: var(--bg-deep);
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                gap: 18px;
+            }
+            #result-overlay.show {
+                display: flex;
+            }
+            #result-title {
+                font-size: 34px;
+                letter-spacing: 8px;
+                text-transform: uppercase;
+                text-align: center;
+                line-height: 1.3;
+                white-space: pre-line;
+            }
+            #result-title.win {
+                color: var(--accent-win);
+                text-shadow: 0 0 20px var(--accent-win-glow);
+            }
+            #result-title.lose {
+                color: var(--accent-lose);
+                text-shadow: 0 0 20px var(--accent-lose-glow);
+            }
+            #result-body {
+                font-size: 14px;
+                line-height: 1.7;
+                letter-spacing: 0;
+                color: var(--text-secondary);
+                text-align: center;
+                max-width: 520px;
+            }
+            #result-body .highlight {
+                color: var(--text-primary);
+            }
+            #btn-restart {
+                background: var(--accent-confirm-bg);
+                border: 1px solid var(--accent-confirm);
+                border-radius: 5px;
+                padding: 11px 46px;
+                font-family: "Courier New", Courier, monospace;
+                font-size: 12px;
+                letter-spacing: 3px;
+                color: var(--accent-confirm);
+                cursor: pointer;
+                text-transform: uppercase;
+                transition: all 0.14s;
+            }
+            #btn-restart:hover {
+                box-shadow: 0 0 18px var(--accent-confirm-glow);
+            }
+        </style>
+    </head>
+    <body>
+        <!-- ═══════════════════════ LAUNCH SCREEN ═══════════════════════ -->
+        <div id="screen-newgame">
+            <div id="ng-title">CORRUPTÓPOLIS</div>
+            <div id="ng-subtitle">
+                The First Hyperpolis — Election Cycle 2027–2028
+            </div>
+            <div class="ng-rule"></div>
+            <div id="ng-brief">
+                <p>
+                    You are the newly appointed
+                    <strong>Meme Commander Officer (MCO)</strong> for the
+                    insurgent coalition. The
+                    <strong>Collaborative Corruption Matrix</strong> controls
+                    every corner of the 225-district electoral map.
+                </p>
+                <p>
+                    Resources are minimal — <em>"no tengo un mango"</em>. Your
+                    weapon: the <strong>Generational Organ of Memes</strong>.
+                    Deploy narrative particles, fortify receptive districts, and
+                    let demographic resonance amplify your signal past the
+                    establishment's defenses.
+                </p>
+                <span class="warn"
+                    >⚠ The Matrix actively spreads each epoch — it does not
+                    stand still. Low-population border districts fall first.
+                    Fortify them or lose them permanently.</span
+                >
+            </div>
+            <div class="ng-rule"></div>
+            <div id="ng-cadence-label">Select campaign cadence</div>
+            <div id="ng-cadences">
+                <div
+                    class="cadence-card selectable active"
+                    id="card-12"
+                    onclick="selectCadence(12, this)"
+                >
+                    <span class="c-turns">12</span>
+                    <span class="c-label">Epochs</span>
+                    <span class="c-desc"
+                        >1 Month = 1 Epoch<br />Oct 2027 → Oct 2028</span
+                    >
+                    <span class="c-proto">PROTOTYPE</span>
+                </div>
+                <div
+                    class="cadence-card locked"
+                    title="Requires additional compute budget"
+                >
+                    <span class="c-lock">🔒</span>
+                    <span class="c-turns">52</span>
+                    <span class="c-label">Epochs</span>
+                    <span class="c-desc"
+                        >1 Week = 1 Epoch<br />High token cost</span
+                    >
+                </div>
+                <div
+                    class="cadence-card locked"
+                    title="Requires additional compute budget"
+                >
+                    <span class="c-lock">🔒</span>
+                    <span class="c-turns">365</span>
+                    <span class="c-label">Epochs</span>
+                    <span class="c-desc"
+                        >1 Day = 1 Epoch<br />Full simulation</span
+                    >
+                </div>
+            </div>
+            <div class="ng-rule"></div>
+            <div id="ng-api-section">
+                <div class="api-section-label">
+                    ⚡ AI &amp; Voice — Optional
+                </div>
+                <div class="key-row">
+                    <span class="key-label">ElevenLabs</span>
+                    <input
+                        class="key-input"
+                        type="password"
+                        id="ng-el-key"
+                        placeholder="API key · voice synthesis + recognition"
+                        autocomplete="off"
+                    />
+                    <button class="key-eye" data-target="ng-el-key">👁</button>
+                </div>
+                <div class="key-row">
+                    <span class="key-label">Gemini</span>
+                    <input
+                        class="key-input"
+                        type="password"
+                        id="ng-gem-key"
+                        placeholder="API key · AI command interpretation"
+                        autocomplete="off"
+                    />
+                    <button class="key-eye" data-target="ng-gem-key">👁</button>
+                </div>
+            </div>
+            <button id="ng-start" onclick="launchGame()">
+                LAUNCH SIMULATION
+            </button>
+        </div>
+
+        <!-- ═══════════════════════ MAIN GAME ════════════════════════════ -->
+        <div id="screen-game">
+            <!-- ── Sidebar ─────────────────────────────────── -->
+            <div id="sidebar">
+                <!-- Header -->
+                <div id="sb-header">
+                    <div id="sb-title">CORRUPTÓPOLIS</div>
+                    <button id="btn-settings-toggle" title="Configure API Keys">
+                        ⚙
+                    </button>
+                </div>
+
+                <!-- In-game settings -->
+                <div id="settings-inline">
+                    <div class="api-section-label" style="margin-bottom: 3px">
+                        API Keys
+                    </div>
+                    <div class="key-row">
+                        <span class="key-label">ElevenLabs</span>
+                        <input
+                            class="key-input"
+                            type="password"
+                            id="ig-el-key"
+                            placeholder="API key"
+                            autocomplete="off"
+                        />
+                        <button class="key-eye" data-target="ig-el-key">
+                            👁
+                        </button>
+                    </div>
+                    <div class="key-row">
+                        <span class="key-label">Gemini</span>
+                        <input
+                            class="key-input"
+                            type="password"
+                            id="ig-gem-key"
+                            placeholder="API key"
+                            autocomplete="off"
+                        />
+                        <button class="key-eye" data-target="ig-gem-key">
+                            👁
+                        </button>
+                    </div>
+                    <button id="btn-save-keys">SAVE</button>
+                </div>
+
+                <!-- Theme switcher -->
+                <div id="theme-switcher">
+                    <button class="theme-btn" data-val="dark">◼ DARK</button>
+                    <button class="theme-btn" data-val="dim">◗ DIM</button>
+                    <button class="theme-btn" data-val="light">◻ LIGHT</button>
+                </div>
+
+                <!-- Epoch strip — NO es-days -->
+                <div class="es-row">
+                    <span class="es-month" id="es-month">OCT 2027</span>
+                    <span class="es-counter" id="es-counter">EPOCH 1 / 12</span>
+                </div>
+                <div class="es-bar-wrap">
+                    <div
+                        class="es-bar-fill"
+                        id="es-bar"
+                        style="width: 0%"
+                    ></div>
+                </div>
+
+                <div class="sb-divider"></div>
+
+                <!-- Action Panel — ONLY boxed section -->
+                <div id="action-panel">
+                    <div class="ap-label">Generational Organ of Memes</div>
+                    <div id="ap-meme-row">
+                        <button class="meme-card selected" id="btn-standard">
+                            BROADCAST<br /><span
+                                style="font-size: 10px; opacity: 0.5"
+                                >1 AP · standard</span
+                            >
+                        </button>
+                        <button class="meme-card" id="btn-fortify">
+                            FORTIFY<br /><span
+                                style="font-size: 10px; opacity: 0.5"
+                                >2 AP · 3 epochs</span
+                            >
+                        </button>
+                    </div>
+                    <div id="ap-stats-row">
+                        <span class="ap-stat" id="ap-display"
+                            >AP:&nbsp;<span class="val" id="ap-val">3</span
+                            >&nbsp;/&nbsp;3</span
+                        >
+                        <span class="ap-stat"
+                            >⟩&nbsp;<span id="phase-val"
+                                >PLAYER ACTION</span
+                            ></span
+                        >
+                    </div>
+                    <button id="btn-end-epoch">ADVANCE EPOCH</button>
+                    <div id="hotkey-hint">SPACE / ENTER to advance</div>
+                </div>
+
+                <div class="sb-divider"></div>
+
+                <!-- Communication Channel -->
+                <div class="sb-section-label">Communication Channel</div>
+                <select class="comm-select" id="comm-faction">
+                    <option value="political">Political</option>
+                    <option value="military">Military</option>
+                    <option value="economic">Economic</option>
+                    <option value="religious">Religious</option>
+                    <option value="scientific">Scientific</option>
+                    <option value="cultural">Cultural</option>
+                </select>
+                <textarea
+                    class="comm-textarea"
+                    id="comm-message"
+                    placeholder="Write a narrative message targeting this faction…"
+                ></textarea>
+                <div id="comm-row">
+                    <button id="btn-comm-send">Send for Analysis</button>
+                    <span id="comm-status"></span>
+                </div>
+
+                <div class="sb-divider"></div>
+
+                <!-- Planned Actions -->
+                <div class="sb-section-label">Planned Actions</div>
+                <div id="queue-list">
+                    <div class="queue-empty">No actions queued</div>
+                </div>
+
+                <div class="sb-divider"></div>
+
+                <!-- Voice — NO initial text -->
+                <div id="voice-header">
+                    <div class="sb-section-label" style="margin-bottom: 0">
+                        🎙 Voice Command
+                    </div>
+                    <button id="btn-mic" title="Record field directive">
+                        🎙
+                    </button>
+                </div>
+                <div id="voice-status"></div>
+                <div id="voice-log"></div>
+
+                <div class="sb-divider"></div>
+
+                <!-- Legend: 4 swatches + element letter guide -->
+                <div id="legend">
+                    <div id="legend-grid">
+                        <div class="legend-item">
+                            <div
+                                class="legend-swatch"
+                                style="background: rgb(220, 30, 30)"
+                            ></div>
+                            <span>Establishment</span>
+                        </div>
+                        <div class="legend-item">
+                            <div
+                                class="legend-swatch"
+                                style="background: rgb(100, 100, 110)"
+                            ></div>
+                            <span>Contested</span>
+                        </div>
+                        <div class="legend-item">
+                            <div
+                                class="legend-swatch"
+                                style="background: rgb(30, 80, 220)"
+                            ></div>
+                            <span>Coalition</span>
+                        </div>
+                        <div class="legend-item">
+                            <div
+                                class="legend-swatch"
+                                style="
+                                    background: rgba(80, 220, 255, 0.55);
+                                    border-color: rgba(80, 220, 255, 0.4);
+                                "
+                            ></div>
+                            <span>Fortified</span>
+                        </div>
+                    </div>
+                    <div id="legend-elements">
+                        <div class="el-badge">
+                            <span class="el-letter" style="color: #c084fc"
+                                >P</span
+                            ><span>Political</span>
+                        </div>
+                        <div class="el-badge">
+                            <span class="el-letter" style="color: #f87171"
+                                >M</span
+                            ><span>Military</span>
+                        </div>
+                        <div class="el-badge">
+                            <span class="el-letter" style="color: #fbbf24"
+                                >E</span
+                            ><span>Economic</span>
+                        </div>
+                        <div class="el-badge">
+                            <span class="el-letter" style="color: #a78bfa"
+                                >R</span
+                            ><span>Religious</span>
+                        </div>
+                        <div class="el-badge">
+                            <span class="el-letter" style="color: #38bdf8"
+                                >S</span
+                            ><span>Scientific</span>
+                        </div>
+                        <div class="el-badge">
+                            <span class="el-letter" style="color: #4ade80"
+                                >C</span
+                            ><span>Cultural</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Canvas Area ───────────────────────────────── -->
+            <div id="canvas-area">
+                <div id="map-header">
+                    <span class="map-stat"
+                        >NARRATIVE
+                        <span id="hud-align" class="map-val">—</span></span
+                    >
+                    <span class="map-stat"
+                        >DISTRICTS
+                        <span id="hud-nodes" class="map-val">—</span></span
+                    >
+                    <span class="map-stat"
+                        >SIGNAL <span id="vibe-val">—</span></span
+                    >
+                    <span class="map-stat"
+                        >MATRIX
+                        <span id="hud-enemy" class="map-val"
+                            >ENTRENCHED</span
+                        ></span
+                    >
+                </div>
+                <div id="canvas-wrapper">
+                    <canvas id="grid"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════ RESULT OVERLAY ══════════════════════ -->
+        <div id="result-overlay">
+            <div id="result-title">—</div>
+            <div id="result-body">—</div>
+            <button id="btn-restart" onclick="restartGame()">
+                NEW CAMPAIGN
+            </button>
+        </div>
+
+        <script>
+            /* ═══════════════════════════════════════════════════════════════
+   THEME SYSTEM
+═══════════════════════════════════════════════════════════════ */
+            let currentTheme = localStorage.getItem("corrupto-theme") || "dark";
+
+            function setTheme(t) {
+                currentTheme = t;
+                document.documentElement.setAttribute("data-theme", t);
+                localStorage.setItem("corrupto-theme", t);
+                document
+                    .querySelectorAll(".theme-btn")
+                    .forEach((b) =>
+                        b.classList.toggle("active", b.dataset.val === t),
+                    );
+                if (grid.length) drawGrid();
+            }
+            document.documentElement.setAttribute("data-theme", currentTheme);
+            document.querySelectorAll(".theme-btn").forEach((btn) => {
+                btn.classList.toggle(
+                    "active",
+                    btn.dataset.val === currentTheme,
+                );
+                btn.addEventListener("click", () => setTheme(btn.dataset.val));
+            });
+
+            /* ═══════════════════════════════════════════════════════════════
+   API KEY MANAGEMENT
+═══════════════════════════════════════════════════════════════ */
+            let ELEVEN_KEY = localStorage.getItem("corrupto-el-key") || "";
+            let GEMINI_KEY = localStorage.getItem("corrupto-gem-key") || "";
+            const EL_VOICE = "pNInz6obpgDQGcFmaJgB";
+
+            function loadKeysIntoInputs() {
+                ["ng-el-key", "ig-el-key"].forEach((id) => {
+                    const el = document.getElementById(id);
+                    if (el) el.value = ELEVEN_KEY;
+                });
+                ["ng-gem-key", "ig-gem-key"].forEach((id) => {
+                    const el = document.getElementById(id);
+                    if (el) el.value = GEMINI_KEY;
+                });
+            }
+
+            function saveKeys(elId, gemId) {
+                const ev = (document.getElementById(elId) || {}).value || "";
+                const gv = (document.getElementById(gemId) || {}).value || "";
+                if (ev) ELEVEN_KEY = ev;
+                if (gv) GEMINI_KEY = gv;
+                localStorage.setItem("corrupto-el-key", ELEVEN_KEY);
+                localStorage.setItem("corrupto-gem-key", GEMINI_KEY);
+                loadKeysIntoInputs();
+            }
+
+            // Eye-toggle for all password inputs
+            document.querySelectorAll(".key-eye").forEach((btn) => {
+                btn.addEventListener("click", () => {
+                    const inp = document.getElementById(btn.dataset.target);
+                    if (inp)
+                        inp.type =
+                            inp.type === "password" ? "text" : "password";
+                });
+            });
+
+            // In-game settings panel toggle
+            document
+                .getElementById("btn-settings-toggle")
+                .addEventListener("click", () => {
+                    document
+                        .getElementById("settings-inline")
+                        .classList.toggle("open");
+                });
+            document
+                .getElementById("btn-save-keys")
+                .addEventListener("click", () => {
+                    saveKeys("ig-el-key", "ig-gem-key");
+                    document
+                        .getElementById("settings-inline")
+                        .classList.remove("open");
+                    const s = document.getElementById("voice-status");
+                    if (s) s.textContent = "API keys saved.";
+                    setTimeout(() => {
+                        if (s) s.textContent = "";
+                    }, 2200);
+                });
+
+            /* ═══════════════════════════════════════════════════════════════
+   ELEVENLABS — TEXT-TO-SPEECH
+═══════════════════════════════════════════════════════════════ */
+            const AUDIO_PHRASES = {
+                epoch: "Epoch advanced.",
+                broadcast: "Meme broadcast deployed.",
+                fortify: "Narrative fortress established.",
+                harmonic: "Demographic resonance. Signal amplified.",
+                dominance: "Narrative dominance achieved.",
+                friction: "Ideological friction in the field.",
+                hostile: "Warning. Hostile override active.",
+                victory: "Electoral victory. The coalition prevails.",
+                defeat: "Campaign failed. The establishment holds power.",
+            };
+
+            async function speak(key) {
+                if (!ELEVEN_KEY) return;
+                const text = AUDIO_PHRASES[key];
+                if (!text) return;
+                try {
+                    const res = await fetch(
+                        `https://api.elevenlabs.io/v1/text-to-speech/${EL_VOICE}`,
+                        {
+                            method: "POST",
+                            headers: {
+                                Accept: "audio/mpeg",
+                                "Content-Type": "application/json",
+                                "xi-api-key": ELEVEN_KEY,
+                            },
+                            body: JSON.stringify({
+                                text,
+                                model_id: "eleven_multilingual_v2",
+                                voice_settings: {
+                                    stability: 0.5,
+                                    similarity_boost: 0.6,
+                                },
+                            }),
+                        },
+                    );
+                    if (!res.ok) {
+                        console.warn("[ElevenLabs TTS] error", res.status);
+                        return;
+                    }
+                    const blob = await res.blob();
+                    const url = URL.createObjectURL(blob);
+                    const audio = new Audio(url);
+                    audio.onended = () => URL.revokeObjectURL(url);
+                    audio.play().catch(() => {});
+                } catch (e) {
+                    console.warn("[ElevenLabs TTS]", e.message);
+                }
+            }
+
+            /* ═══════════════════════════════════════════════════════════════
+   ELEVENLABS — SPEECH-TO-TEXT
+═══════════════════════════════════════════════════════════════ */
+            let mediaRecorder = null;
+            let audioChunks = [];
+            let isElRecording = false;
+
+            function getBestMimeType() {
+                const types = [
+                    "audio/webm;codecs=opus",
+                    "audio/webm",
+                    "audio/ogg;codecs=opus",
+                    "audio/ogg",
+                    "audio/mp4",
+                ];
+                return (
+                    types.find((t) => MediaRecorder.isTypeSupported(t)) || ""
+                );
+            }
+
+            async function startElRecording() {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({
+                        audio: true,
+                    });
+                    const mimeType = getBestMimeType();
+                    audioChunks = [];
+                    mediaRecorder = new MediaRecorder(
+                        stream,
+                        mimeType ? { mimeType } : {},
+                    );
+                    mediaRecorder.ondataavailable = (e) => {
+                        if (e.data.size > 0) audioChunks.push(e.data);
+                    };
+                    mediaRecorder.onstop = async () => {
+                        stream.getTracks().forEach((t) => t.stop());
+                        const type = mimeType || "audio/webm";
+                        const blob = new Blob(audioChunks, { type });
+                        await sendToElSTT(blob, type);
+                    };
+                    mediaRecorder.start();
+                    isElRecording = true;
+                    document
+                        .getElementById("btn-mic")
+                        .classList.add("recording");
+                    document.getElementById("voice-status").textContent =
+                        "● RECORDING — speak your directive…";
+                    console.log(
+                        "[AUDIO TRIGGER: ElevenLabs STT Channel — Open]",
+                    );
+                } catch (e) {
+                    document.getElementById("voice-status").textContent =
+                        "Mic access denied: " + e.message;
+                }
+            }
+
+            function stopElRecording() {
+                if (mediaRecorder?.state === "recording") {
+                    mediaRecorder.stop();
+                    isElRecording = false;
+                    document
+                        .getElementById("btn-mic")
+                        .classList.remove("recording");
+                    document.getElementById("voice-status").textContent =
+                        "Processing transcript…";
+                }
+            }
+
+            async function sendToElSTT(blob, mimeType) {
+                try {
+                    const ext = mimeType.includes("webm")
+                        ? "webm"
+                        : mimeType.includes("ogg")
+                          ? "ogg"
+                          : "mp4";
+                    const fd = new FormData();
+                    fd.append("file", blob, `cmd.${ext}`);
+                    fd.append("model_id", "scribe_v1");
+                    fd.append("language_code", "en");
+                    const res = await fetch(
+                        "https://api.elevenlabs.io/v1/speech-to-text",
+                        {
+                            method: "POST",
+                            headers: { "xi-api-key": ELEVEN_KEY },
+                            body: fd,
+                        },
+                    );
+                    if (!res.ok) {
+                        document.getElementById("voice-status").textContent =
+                            `STT error: ${res.status}`;
+                        return;
+                    }
+                    const data = await res.json();
+                    const transcript = (data.text || "").toLowerCase().trim();
+                    document.getElementById("voice-status").textContent =
+                        "Channel closed.";
+                    if (transcript) {
+                        console.log(
+                            `[AUDIO TRIGGER: Voice Command — "${transcript}"]`,
+                        );
+                        interpretVoiceCommand(transcript);
+                    } else {
+                        document.getElementById("voice-status").textContent =
+                            "No speech detected.";
+                    }
+                } catch (e) {
+                    document.getElementById("voice-status").textContent =
+                        "STT failed: " + e.message;
+                }
+            }
+
+            /* ═══════════════════════════════════════════════════════════════
+   WEB SPEECH API — fallback when no ElevenLabs key
+═══════════════════════════════════════════════════════════════ */
+            let recognition = null;
+            let micActive = false;
+
+            function initWebSpeech() {
+                const SR =
+                    window.SpeechRecognition || window.webkitSpeechRecognition;
+                if (!SR) {
+                    document.getElementById("voice-status").textContent =
+                        "Voice recognition unavailable.";
+                    document.getElementById("btn-mic").disabled = true;
+                    return;
+                }
+                recognition = new SR();
+                recognition.lang = "en-US";
+                recognition.interimResults = false;
+                recognition.maxAlternatives = 1;
+                recognition.onstart = () => {
+                    micActive = true;
+                    document
+                        .getElementById("btn-mic")
+                        .classList.add("recording");
+                    document.getElementById("voice-status").textContent =
+                        "● RECORDING — speak your directive…";
+                };
+                recognition.onend = () => {
+                    micActive = false;
+                    document
+                        .getElementById("btn-mic")
+                        .classList.remove("recording");
+                    document.getElementById("voice-status").textContent =
+                        "Channel closed.";
+                };
+                recognition.onerror = (ev) => {
+                    micActive = false;
+                    document
+                        .getElementById("btn-mic")
+                        .classList.remove("recording");
+                    document.getElementById("voice-status").textContent =
+                        "Error: " + ev.error;
+                };
+                recognition.onresult = (ev) => {
+                    const t = ev.results[0][0].transcript.toLowerCase().trim();
+                    console.log(`[AUDIO TRIGGER: Voice Command — "${t}"]`);
+                    interpretVoiceCommand(t);
+                };
+            }
+
+            /* ═══════════════════════════════════════════════════════════════
+   GEMINI — AI COMMAND INTERPRETATION
+═══════════════════════════════════════════════════════════════ */
+            async function interpretWithGemini(transcript) {
+                if (!GEMINI_KEY) return null;
+                document.getElementById("voice-status").textContent =
+                    "Gemini analyzing…";
+                try {
+                    const res = await fetch(
+                        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`,
+                        {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                                contents: [
+                                    {
+                                        parts: [
+                                            {
+                                                text:
+                                                    `You are the strategic AI for Corruptópolis, a political simulation. ` +
+                                                    `Player voice input: "${transcript}". ` +
+                                                    `Reply with exactly one of: "END_EPOCH", "STANDARD_MEME", "FORTIFY", ` +
+                                                    `or "COMMENT: [one tactical sentence, max 12 words]". Reply only that.`,
+                                            },
+                                        ],
+                                    },
+                                ],
+                                generationConfig: {
+                                    maxOutputTokens: 30,
+                                    temperature: 0.2,
+                                },
+                            }),
+                        },
+                    );
+                    if (!res.ok) return null;
+                    const data = await res.json();
+                    document.getElementById("voice-status").textContent =
+                        "Channel closed.";
+                    return (
+                        data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ||
+                        null
+                    );
+                } catch (e) {
+                    document.getElementById("voice-status").textContent =
+                        "AI unavailable.";
+                    return null;
+                }
+            }
+
+            /* ═══════════════════════════════════════════════════════════════
+   VOICE COMMAND INTERPRETATION
+═══════════════════════════════════════════════════════════════ */
+            function voiceLog(text, cls) {
+                const log = document.getElementById("voice-log");
+                const span = document.createElement("span");
+                span.className = cls || "vl-note";
+                span.textContent = text;
+                log.innerHTML = "";
+                log.appendChild(span);
+            }
+
+            async function interpretVoiceCommand(transcript) {
+                if (
+                    /advance|end turn|end epoch|commit|seal|execute|next turn/.test(
+                        transcript,
+                    )
+                ) {
+                    voiceLog("→ END EPOCH", "vl-exec");
+                    if (phase === "PLAYER_ACTION") executeTurn();
+                    return;
+                }
+                if (
+                    /fortif|secure|defend|bunker|lock|protect/.test(transcript)
+                ) {
+                    selectedMeme = "fortify";
+                    updateHUD();
+                    voiceLog("→ FORTIFY mode armed", "vl-exec");
+                    return;
+                }
+                if (
+                    /broadcast|standard|deploy|spread|publish|meme/.test(
+                        transcript,
+                    )
+                ) {
+                    selectedMeme = "standard";
+                    updateHUD();
+                    voiceLog("→ BROADCAST mode armed", "vl-exec");
+                    return;
+                }
+
+                voiceLog(`"${transcript}"`, "vl-cmd");
+
+                if (GEMINI_KEY) {
+                    const reply = await interpretWithGemini(transcript);
+                    if (!reply) return;
+                    if (reply === "END_EPOCH") {
+                        voiceLog("→ AI: END EPOCH", "vl-exec");
+                        if (phase === "PLAYER_ACTION") executeTurn();
+                    } else if (reply === "STANDARD_MEME") {
+                        selectedMeme = "standard";
+                        updateHUD();
+                        voiceLog("→ AI: BROADCAST mode", "vl-exec");
+                    } else if (reply === "FORTIFY") {
+                        selectedMeme = "fortify";
+                        updateHUD();
+                        voiceLog("→ AI: FORTIFY mode", "vl-exec");
+                    } else if (reply.startsWith("COMMENT:")) {
+                        voiceLog(
+                            "AI: " + reply.replace("COMMENT:", "").trim(),
+                            "vl-ai",
+                        );
+                    }
+                }
+            }
+
+            /* ═══════════════════════════════════════════════════════════════
+   CANVAS THEME HELPERS
+═══════════════════════════════════════════════════════════════ */
+            function getCanvasTheme() {
+                const cs = getComputedStyle(document.documentElement);
+                const get = (v) => cs.getPropertyValue(v).trim();
+                return {
+                    bg: get("--canvas-bg") || "#0c1017",
+                    hexBorder: get("--canvas-hex-border") || "#1e2438",
+                    pulseBorder:
+                        get("--canvas-pulse-border") ||
+                        "rgba(150,210,255,0.85)",
+                    fortify: get("--canvas-fortify") || "rgba(80,210,255,0.80)",
+                };
+            }
+
+            function getPalette() {
+                const cs = getComputedStyle(document.documentElement);
+                const parse = (v) =>
+                    cs
+                        .getPropertyValue(v)
+                        .trim()
+                        .split(",")
+                        .map((s) => parseInt(s.trim(), 10));
+                return {
+                    enemy: parse("--pal-enemy"),
+                    neutral: parse("--pal-neutral"),
+                    player: parse("--pal-player"),
+                };
+            }
+
+            /* ═══════════════════════════════════════════════════════════════
+   CONSTANTS
+═══════════════════════════════════════════════════════════════ */
+            const ELEMENTS = [
+                {
+                    key: "political",
+                    label: "Political",
+                    color: "#c084fc",
+                    letter: "P",
+                },
+                {
+                    key: "military",
+                    label: "Military",
+                    color: "#f87171",
+                    letter: "M",
+                },
+                {
+                    key: "economic",
+                    label: "Economic",
+                    color: "#fbbf24",
+                    letter: "E",
+                },
+                {
+                    key: "religious",
+                    label: "Religious",
+                    color: "#a78bfa",
+                    letter: "R",
+                },
+                {
+                    key: "scientific",
+                    label: "Scientific",
+                    color: "#38bdf8",
+                    letter: "S",
+                },
+                {
+                    key: "cultural",
+                    label: "Cultural",
+                    color: "#4ade80",
+                    letter: "C",
+                },
+            ];
+
+            const COLS = 15,
+                ROWS = 15;
+            const HEX_SIZE = 28;
+            const HEX_H = Math.sqrt(3) * HEX_SIZE;
+            const COL_SPACING = HEX_SIZE * 1.5;
+            const ROW_SPACING = HEX_H;
+            const OFFSET_X = 40,
+                OFFSET_Y = 40;
+            const CANVAS_W = Math.ceil(
+                OFFSET_X * 2 + (COLS - 1) * COL_SPACING + HEX_SIZE * 2,
+            );
+            const CANVAS_H = Math.ceil(
+                OFFSET_Y * 2 + (ROWS - 1) * ROW_SPACING + HEX_H,
+            );
+
+            const TOTAL_EPOCHS = 12;
+            const EPOCH_LABELS = [
+                "OCT 2027",
+                "NOV 2027",
+                "DEC 2027",
+                "JAN 2028",
+                "FEB 2028",
+                "MAR 2028",
+                "APR 2028",
+                "MAY 2028",
+                "JUN 2028",
+                "JUL 2028",
+                "AUG 2028",
+                "SEP 2028",
+            ];
+            const EPOCH_DAYS = [31, 30, 31, 31, 28, 31, 30, 31, 30, 31, 31, 30];
+
+            /* ═══════════════════════════════════════════════════════════════
+   CANVAS SETUP
+═══════════════════════════════════════════════════════════════ */
+            const canvas = document.getElementById("grid");
+            canvas.width = CANVAS_W;
+            canvas.height = CANVAS_H;
+            const ctx = canvas.getContext("2d");
+
+            /* ═══════════════════════════════════════════════════════════════
+   RUNTIME STATE
+═══════════════════════════════════════════════════════════════ */
+            let phase = "PLAYER_ACTION";
+            let epochNumber = 1;
+            let ap = 3;
+            let selectedMeme = "standard";
+            let currentVibeLabel = "—";
+            let currentVibeClass = "";
+            let pulsingNode = null;
+            let grid = [];
+            let actionQueue = [];
+            let queueIdCounter = 0;
+            let selectedCadence = 12;
+            let lastGlobalAvg = 0.5;
+
+            /* ═══════════════════════════════════════════════════════════════
+   LAUNCH / RESTART
+═══════════════════════════════════════════════════════════════ */
+            function selectCadence(n, el) {
+                if (!el.classList.contains("selectable")) return;
+                selectedCadence = n;
+                document
+                    .querySelectorAll(".cadence-card.selectable")
+                    .forEach((c) => c.classList.remove("active"));
+                el.classList.add("active");
+            }
+
+            function launchGame() {
+                saveKeys("ng-el-key", "ng-gem-key");
+                document.getElementById("screen-newgame").style.display =
+                    "none";
+                document.getElementById("screen-game").style.display = "flex";
+                initGame();
+            }
+
+            function restartGame() {
+                document
+                    .getElementById("result-overlay")
+                    .classList.remove("show");
+                document.getElementById("screen-newgame").style.display =
+                    "flex";
+                document.getElementById("screen-game").style.display = "none";
+            }
+
+            /* ═══════════════════════════════════════════════════════════════
+   GAME INIT
+═══════════════════════════════════════════════════════════════ */
+            function initGame() {
+                phase = "PLAYER_ACTION";
+                epochNumber = 1;
+                ap = 3;
+                selectedMeme = "standard";
+                pulsingNode = null;
+                currentVibeLabel = "—";
+                currentVibeClass = "";
+                actionQueue = [];
+                queueIdCounter = 0;
+                grid = buildGrid();
+                renderQueue();
+                loadKeysIntoInputs();
+                fitCanvas();
+                evaluateVibeState();
+                updateHUD();
+                drawGrid();
+            }
+
+            /* ═══════════════════════════════════════════════════════════════
+   GRID
+═══════════════════════════════════════════════════════════════ */
+            function isEnemySource(col, row) {
+                return (
+                    (col === 0 && row === 0) ||
+                    (col === 0 && row === 14) ||
+                    (col === 14 && row === 0) ||
+                    (col === 14 && row === 14)
+                );
+            }
+
+            function generateElementWeights() {
+                const weights = {};
+                ELEMENTS.forEach((e) => {
+                    weights[e.key] = Math.floor(Math.random() * 4) + 1;
+                });
+                const numDominant = Math.random() < 0.5 ? 1 : 2;
+                const keys = ELEMENTS.map((e) => e.key).sort(
+                    () => Math.random() - 0.5,
+                );
+                for (let i = 0; i < numDominant; i++) {
+                    weights[keys[i]] = Math.floor(Math.random() * 6) + 7;
+                }
+                return weights;
+            }
+
+            function getDominant(elements) {
+                return Object.keys(elements).reduce((a, b) =>
+                    elements[a] > elements[b] ? a : b,
+                );
+            }
+
+            function buildGrid() {
+                const g = [];
+                for (let c = 0; c < COLS; c++) {
+                    g[c] = [];
+                    for (let r = 0; r < ROWS; r++) {
+                        const enemy = isEnemySource(c, r);
+                        const base = enemy
+                            ? Math.random() * 0.15
+                            : Math.min(
+                                  1,
+                                  Math.max(
+                                      0,
+                                      0.5 + (Math.random() - 0.5) * 0.4,
+                                  ),
+                              );
+                        g[c][r] = {
+                            alignment: base,
+                            population: Math.floor(Math.random() * 10) + 1,
+                            isEnemySource: enemy,
+                            elements: generateElementWeights(),
+                            fortified: 0,
+                        };
+                    }
+                }
+                return g;
+            }
+
+            /* ═══════════════════════════════════════════════════════════════
+   GEOMETRY
+═══════════════════════════════════════════════════════════════ */
+            function hexCenter(col, row) {
+                return {
+                    x: OFFSET_X + col * COL_SPACING,
+                    y:
+                        OFFSET_Y +
+                        row * ROW_SPACING +
+                        (col % 2 === 0 ? 0 : HEX_H / 2),
+                };
+            }
+
+            function hexVertices(cx, cy, size) {
+                const v = [];
+                for (let i = 0; i < 6; i++) {
+                    const a = (Math.PI / 180) * (60 * i);
+                    v.push([cx + size * Math.cos(a), cy + size * Math.sin(a)]);
+                }
+                return v;
+            }
+
+            function getNeighbors(col, row) {
+                const dirs =
+                    col % 2 === 0
+                        ? [
+                              [+1, 0],
+                              [-1, 0],
+                              [0, -1],
+                              [0, +1],
+                              [+1, -1],
+                              [-1, -1],
+                          ]
+                        : [
+                              [+1, 0],
+                              [-1, 0],
+                              [0, -1],
+                              [0, +1],
+                              [+1, +1],
+                              [-1, +1],
+                          ];
+                return dirs
+                    .map(([dc, dr]) => [col + dc, row + dr])
+                    .filter(
+                        ([c, r]) => c >= 0 && c < COLS && r >= 0 && r < ROWS,
+                    );
+            }
+
+            /* ═══════════════════════════════════════════════════════════════
+   COLOUR
+═══════════════════════════════════════════════════════════════ */
+            function alignmentColor(a, pal) {
+                const { enemy: e, neutral: n, player: p } = pal;
+                let r, g, b;
+                if (a <= 0.5) {
+                    const t = a / 0.5;
+                    r = Math.round(e[0] + t * (n[0] - e[0]));
+                    g = Math.round(e[1] + t * (n[1] - e[1]));
+                    b = Math.round(e[2] + t * (n[2] - e[2]));
+                } else {
+                    const t = (a - 0.5) / 0.5;
+                    r = Math.round(n[0] + t * (p[0] - n[0]));
+                    g = Math.round(n[1] + t * (p[1] - n[1]));
+                    b = Math.round(n[2] + t * (p[2] - n[2]));
+                }
+                return `rgb(${r},${g},${b})`;
+            }
+
+            /* ═══════════════════════════════════════════════════════════════
+   DRAW — Element indicator replaces demographic symbol
+═══════════════════════════════════════════════════════════════ */
+            const EL_CANVAS_RGB = {
+                political: [192, 84, 252],
+                military: [248, 113, 113],
+                economic: [251, 191, 36],
+                religious: [167, 139, 250],
+                scientific: [56, 189, 248],
+                cultural: [74, 222, 128],
+            };
+
+            function drawElementIndicator(cx, cy, elements) {
+                const dom = getDominant(elements);
+                const weight = elements[dom];
+                const [er, eg, eb] = EL_CANVAS_RGB[dom];
+                const alpha = 0.2 + (weight / 12) * 0.38;
+                ctx.save();
+                ctx.globalAlpha = alpha;
+                ctx.fillStyle = `rgb(${er},${eg},${eb})`;
+                ctx.font = `bold 8px "Courier New"`;
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText(dom[0].toUpperCase(), cx, cy);
+                ctx.restore();
+            }
+
+            function drawHex(col, row, theme, pal) {
+                const node = grid[col][row];
+                const { x: cx, y: cy } = hexCenter(col, row);
+                const isPulsing =
+                    pulsingNode &&
+                    pulsingNode.col === col &&
+                    pulsingNode.row === row;
+                const inner = HEX_SIZE - 2;
+                const verts = hexVertices(cx, cy, inner);
+
+                ctx.beginPath();
+                ctx.moveTo(verts[0][0], verts[0][1]);
+                for (let i = 1; i < 6; i++)
+                    ctx.lineTo(verts[i][0], verts[i][1]);
+                ctx.closePath();
+
+                if (isPulsing) {
+                    const grad = ctx.createRadialGradient(
+                        cx,
+                        cy,
+                        0,
+                        cx,
+                        cy,
+                        inner,
+                    );
+                    grad.addColorStop(0, "rgba(210,235,255,0.97)");
+                    grad.addColorStop(
+                        0.45,
+                        alignmentColor(node.alignment, pal),
+                    );
+                    grad.addColorStop(1, alignmentColor(node.alignment, pal));
+                    ctx.fillStyle = grad;
+                } else {
+                    ctx.fillStyle = alignmentColor(node.alignment, pal);
+                }
+                ctx.fill();
+                ctx.strokeStyle = isPulsing
+                    ? theme.pulseBorder
+                    : theme.hexBorder;
+                ctx.lineWidth = isPulsing ? 2 : 1;
+                ctx.stroke();
+
+                drawElementIndicator(cx, cy, node.elements);
+
+                if (node.fortified > 0) {
+                    ctx.beginPath();
+                    ctx.moveTo(verts[0][0], verts[0][1]);
+                    for (let i = 1; i < 6; i++)
+                        ctx.lineTo(verts[i][0], verts[i][1]);
+                    ctx.closePath();
+                    ctx.strokeStyle = theme.fortify;
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+                }
+
+                if (node.isEnemySource) {
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, 5, 0, Math.PI * 2);
+                    ctx.strokeStyle = "rgba(255,55,55,0.85)";
+                    ctx.lineWidth = 1.5;
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, 2, 0, Math.PI * 2);
+                    ctx.fillStyle = "rgba(255,80,80,0.75)";
+                    ctx.fill();
+                }
+
+                if (isPulsing) {
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, inner * 0.82, 0, Math.PI * 2);
+                    ctx.strokeStyle = theme.pulseBorder;
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+                }
+            }
+
+            function drawGrid() {
+                const theme = getCanvasTheme();
+                const pal = getPalette();
+                ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
+                ctx.fillStyle = theme.bg;
+                ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+                for (let c = 0; c < COLS; c++)
+                    for (let r = 0; r < ROWS; r++) drawHex(c, r, theme, pal);
+            }
+
+            /* ═══════════════════════════════════════════════════════════════
+   RESPONSIVE SCALING
+═══════════════════════════════════════════════════════════════ */
+            function fitCanvas() {
+                const area = document.getElementById("canvas-area");
+                const wrapper = document.getElementById("canvas-wrapper");
+                const availW = area.clientWidth - 24;
+                const availH = area.clientHeight - 44;
+                const scale = Math.min(availW / CANVAS_W, availH / CANVAS_H, 1);
+                wrapper.style.width = Math.floor(CANVAS_W * scale) + "px";
+                wrapper.style.height = Math.floor(CANVAS_H * scale) + "px";
+            }
+            window.addEventListener("resize", () => {
+                fitCanvas();
+                if (grid.length) drawGrid();
+            });
+
+            /* ═══════════════════════════════════════════════════════════════
+   HUD
+═══════════════════════════════════════════════════════════════ */
+            function globalStats() {
+                let total = 0,
+                    controlled = 0;
+                for (let c = 0; c < COLS; c++)
+                    for (let r = 0; r < ROWS; r++) {
+                        total += grid[c][r].alignment;
+                        if (grid[c][r].alignment > 0.8) controlled++;
+                    }
+                return { avg: total / (COLS * ROWS), controlled };
+            }
+
+            function enemyLabel(avg) {
+                if (avg < 0.35) return "COLLAPSING";
+                if (avg < 0.5) return "WEAKENING";
+                if (avg < 0.65) return "HOLDING";
+                return "ENTRENCHED";
+            }
+
+            function updateHUD() {
+                const { avg, controlled } = globalStats();
+                lastGlobalAvg = avg;
+
+                document.getElementById("hud-align").textContent =
+                    (avg * 100).toFixed(1) + "%";
+                document.getElementById("hud-nodes").textContent =
+                    controlled + " / " + COLS * ROWS;
+
+                const vibeEl = document.getElementById("vibe-val");
+                vibeEl.textContent = currentVibeLabel;
+                vibeEl.className = currentVibeClass;
+
+                const el = enemyLabel(avg);
+                document.getElementById("hud-enemy").textContent = el;
+
+                const idx = Math.min(epochNumber - 1, EPOCH_LABELS.length - 1);
+                document.getElementById("es-month").textContent =
+                    EPOCH_LABELS[idx];
+                document.getElementById("es-counter").textContent =
+                    "EPOCH " + epochNumber + " / " + TOTAL_EPOCHS;
+                document.getElementById("es-bar").style.width =
+                    (((epochNumber - 1) / TOTAL_EPOCHS) * 100).toFixed(1) + "%";
+
+                document.getElementById("ap-val").textContent = ap;
+                const phaseEl = document.getElementById("phase-val");
+                const isAction = phase === "PLAYER_ACTION";
+                phaseEl.textContent = isAction
+                    ? "PLAYER ACTION"
+                    : "CALCULATING…";
+                phaseEl.className = isAction ? "" : "calc";
+
+                document.getElementById("btn-standard").disabled = !isAction;
+                document.getElementById("btn-fortify").disabled = !isAction;
+                document.getElementById("btn-end-epoch").disabled = !isAction;
+                document
+                    .getElementById("btn-standard")
+                    .classList.toggle("selected", selectedMeme === "standard");
+                document
+                    .getElementById("btn-fortify")
+                    .classList.toggle("selected", selectedMeme === "fortify");
+            }
+
+            /* ═══════════════════════════════════════════════════════════════
+   VIBE STATE
+═══════════════════════════════════════════════════════════════ */
+            function evaluateVibeState() {
+                const { avg } = globalStats();
+                if (avg > 0.75) {
+                    console.log(
+                        "[AUDIO TRIGGER: Absolute Dominance - Clean Broadcast Synth]",
+                    );
+                    speak("dominance");
+                    currentVibeLabel = "DOMINANCE";
+                    currentVibeClass = "dominance";
+                } else if (avg >= 0.4) {
+                    console.log(
+                        "[AUDIO TRIGGER: Ideological Friction - Polyphonic Crowd Debates]",
+                    );
+                    speak("friction");
+                    currentVibeLabel = "FRICTION";
+                    currentVibeClass = "friction";
+                } else {
+                    console.log(
+                        "[AUDIO TRIGGER: Hostile Override - Distorted Aggressive Radio]",
+                    );
+                    speak("hostile");
+                    currentVibeLabel = "HOSTILE OVERRIDE";
+                    currentVibeClass = "hostile";
+                }
+            }
+
+            /* ═══════════════════════════════════════════════════════════════
+   PHASE 2 — PROPAGATION (harmonic uses getDominant)
+═══════════════════════════════════════════════════════════════ */
+            function runPropagation() {
+                const snap = [];
+                for (let c = 0; c < COLS; c++) {
+                    snap[c] = [];
+                    for (let r = 0; r < ROWS; r++)
+                        snap[c][r] = grid[c][r].alignment;
+                }
+                let harmonicDemo = null;
+                let harmonicSpoke = false;
+
+                for (let c = 0; c < COLS; c++) {
+                    for (let r = 0; r < ROWS; r++) {
+                        if (snap[c][r] > 0.8) {
+                            for (const [nc, nr] of getNeighbors(c, r)) {
+                                if (grid[nc][nr].fortified > 0) continue;
+                                let transfer = 0.15;
+                                if (
+                                    getDominant(grid[c][r].elements) ===
+                                    getDominant(grid[nc][nr].elements)
+                                ) {
+                                    transfer = 0.3;
+                                    harmonicDemo = getDominant(
+                                        grid[c][r].elements,
+                                    );
+                                    console.log(
+                                        "[AUDIO TRIGGER: Harmonic Match - Resonant Chime]",
+                                    );
+                                    if (!harmonicSpoke) {
+                                        speak("harmonic");
+                                        harmonicSpoke = true;
+                                    }
+                                }
+                                grid[nc][nr].alignment = Math.min(
+                                    1.0,
+                                    grid[nc][nr].alignment + transfer,
+                                );
+                            }
+                        }
+                    }
+                }
+                return harmonicDemo;
+            }
+
+            /* ═══════════════════════════════════════════════════════════════
+   PHASE 3 — ENEMY FRICTION (element match uses getDominant)
+═══════════════════════════════════════════════════════════════ */
+            function runEnemyFriction() {
+                const CORNERS = [
+                    [0, 0],
+                    [0, 14],
+                    [14, 0],
+                    [14, 14],
+                ];
+                CORNERS.forEach(([c, r]) => {
+                    grid[c][r].alignment = 0.0;
+                });
+
+                const snap = [];
+                for (let c = 0; c < COLS; c++) {
+                    snap[c] = [];
+                    for (let r = 0; r < ROWS; r++)
+                        snap[c][r] = grid[c][r].alignment;
+                }
+                const spreadRate = 0.1 + (epochNumber / TOTAL_EPOCHS) * 0.14;
+
+                for (let c = 0; c < COLS; c++) {
+                    for (let r = 0; r < ROWS; r++) {
+                        if (snap[c][r] > 0.18) continue;
+                        for (const [nc, nr] of getNeighbors(c, r)) {
+                            if (grid[nc][nr].fortified > 0) continue;
+                            if (snap[nc][nr] <= 0.18) continue;
+                            const drag =
+                                getDominant(grid[c][r].elements) ===
+                                getDominant(grid[nc][nr].elements)
+                                    ? spreadRate * 2
+                                    : spreadRate;
+                            grid[nc][nr].alignment = Math.max(
+                                0,
+                                grid[nc][nr].alignment - drag,
+                            );
+                        }
+                    }
+                }
+
+                const strikeCount = Math.min(
+                    4 + Math.floor((epochNumber - 1) / 2),
+                    8,
+                );
+                const candidates = [];
+                for (let c = 0; c < COLS; c++) {
+                    for (let r = 0; r < ROWS; r++) {
+                        if (grid[c][r].fortified > 0) continue;
+                        if (grid[c][r].alignment <= 0.18) continue;
+                        const borderingEnemy = getNeighbors(c, r).some(
+                            ([nc, nr]) => grid[nc][nr].alignment <= 0.18,
+                        );
+                        if (!borderingEnemy) continue;
+                        candidates.push([c, r]);
+                    }
+                }
+                candidates.sort((a, b) => {
+                    const diff =
+                        grid[a[0]][a[1]].alignment - grid[b[0]][b[1]].alignment;
+                    return Math.abs(diff) > 0.04
+                        ? diff
+                        : grid[a[0]][a[1]].population -
+                              grid[b[0]][b[1]].population;
+                });
+                for (
+                    let i = 0;
+                    i < Math.min(strikeCount, candidates.length);
+                    i++
+                ) {
+                    grid[candidates[i][0]][candidates[i][1]].alignment = 0.0;
+                }
+
+                for (let c = 0; c < COLS; c++)
+                    for (let r = 0; r < ROWS; r++)
+                        if (grid[c][r].fortified > 0) grid[c][r].fortified--;
+            }
+
+            /* ═══════════════════════════════════════════════════════════════
+   ACTION QUEUE
+═══════════════════════════════════════════════════════════════ */
+            function addToQueue(item) {
+                actionQueue.push({ ...item, id: ++queueIdCounter });
+                renderQueue();
+            }
+
+            function renderQueue() {
+                const listEl = document.getElementById("queue-list");
+                if (!listEl) return;
+                if (actionQueue.length === 0) {
+                    listEl.innerHTML =
+                        '<div class="queue-empty">No actions queued</div>';
+                    return;
+                }
+                listEl.innerHTML = "";
+                actionQueue.forEach((item) => {
+                    const div = document.createElement("div");
+                    div.className = "queue-item";
+                    const sign = item.modifier >= 0 ? "+" : "";
+                    const modClass =
+                        item.modifier >= 0 ? "qi-mod-pos" : "qi-mod-neg";
+                    div.innerHTML = `
+                        <span class="qi-badge qi-badge-diplo">DIPLO</span>
+                        <span class="qi-label">${item.faction.toUpperCase()}</span>
+                        <span class="${modClass}">${sign}${item.modifier.toFixed(2)}</span>
+                        <button class="qi-remove" data-id="${item.id}">×</button>`;
+                    listEl.appendChild(div);
+                });
+                listEl.querySelectorAll(".qi-remove").forEach((btn) => {
+                    btn.addEventListener("click", () => {
+                        const id = parseInt(btn.dataset.id);
+                        actionQueue = actionQueue.filter((a) => a.id !== id);
+                        renderQueue();
+                    });
+                });
+            }
+
+            /* ═══════════════════════════════════════════════════════════════
+   DIPLOMACY PROCESSING
+═══════════════════════════════════════════════════════════════ */
+            function processDiplomacyActions() {
+                const SCALE = 0.15;
+                actionQueue.forEach((action) => {
+                    if (action.type !== "DIPLOMACY") return;
+                    for (let c = 0; c < COLS; c++) {
+                        for (let r = 0; r < ROWS; r++) {
+                            const node = grid[c][r];
+                            if (node.fortified > 0 && action.modifier < 0)
+                                continue;
+                            const weight = node.elements[action.faction] || 1;
+                            const impact =
+                                action.modifier * (weight / 12) * SCALE;
+                            node.alignment = Math.min(
+                                1,
+                                Math.max(0, node.alignment + impact),
+                            );
+                        }
+                    }
+                });
+                actionQueue = [];
+                renderQueue();
+            }
+
+            /* ═══════════════════════════════════════════════════════════════
+   COMMUNICATION CHANNEL
+═══════════════════════════════════════════════════════════════ */
+            async function sendFactionMessage() {
+                const faction = document.getElementById("comm-faction").value;
+                const message = (
+                    document.getElementById("comm-message").value || ""
+                ).trim();
+                const statusEl = document.getElementById("comm-status");
+
+                if (!message) {
+                    if (statusEl)
+                        statusEl.textContent = "Write a message first.";
+                    return;
+                }
+
+                if (!GEMINI_KEY) {
+                    if (statusEl)
+                        statusEl.textContent =
+                            "Gemini key required — configure in ⚙ settings.";
+                    return;
+                }
+
+                const btn = document.getElementById("btn-comm-send");
+                btn.disabled = true;
+                if (statusEl) statusEl.textContent = "Analyzing with Gemini…";
+
+                const prompt = `You are evaluating a political influence message in Corruptópolis, a strategic simulation game.
+
+Context:
+- Player role: Meme Commander Officer (MCO), insurgent coalition against the Collaborative Corruption Matrix
+- Target faction: ${faction.toUpperCase()}
+- Player's narrative message: "${message}"
+
+Task: Evaluate how persuasive, logically sound, and strategically effective this message is for the ${faction} faction. Consider: alignment with ${faction} faction values and interests, quality of reasoning, potential to shift opinion against the establishment.
+
+Return ONLY a valid JSON object in this exact format, nothing else:
+{"action_type":"DIPLOMACY","modifier":0.0}
+
+Where modifier is a float from -1.0 (complete rejection, decreases power) to +1.0 (complete success, increases power). Be nuanced — most messages should score between -0.6 and +0.8.`;
+
+                try {
+                    const res = await fetch(
+                        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`,
+                        {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                                contents: [{ parts: [{ text: prompt }] }],
+                                generationConfig: {
+                                    maxOutputTokens: 60,
+                                    temperature: 0.35,
+                                },
+                            }),
+                        },
+                    );
+                    if (!res.ok) throw new Error(`API ${res.status}`);
+                    const data = await res.json();
+                    const raw =
+                        data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ||
+                        "";
+                    const jsonMatch = raw.match(/\{[^}]+\}/);
+                    if (!jsonMatch) throw new Error("Invalid JSON response");
+                    const result = JSON.parse(jsonMatch[0]);
+                    const modifier = Math.max(
+                        -1,
+                        Math.min(1, parseFloat(result.modifier) || 0),
+                    );
+                    addToQueue({
+                        type: "DIPLOMACY",
+                        faction,
+                        modifier,
+                        label: `${faction} ${modifier >= 0 ? "+" : ""}${modifier.toFixed(2)}`,
+                    });
+                    const sign = modifier >= 0 ? "+" : "";
+                    if (statusEl)
+                        statusEl.textContent = `${faction}: ${sign}${modifier.toFixed(2)} — queued ✓`;
+                    document.getElementById("comm-message").value = "";
+                } catch (e) {
+                    if (statusEl) statusEl.textContent = "Error: " + e.message;
+                } finally {
+                    btn.disabled = false;
+                }
+            }
+
+            /* ═══════════════════════════════════════════════════════════════
+   END-EPOCH EXECUTION
+═══════════════════════════════════════════════════════════════ */
+            function executeTurn() {
+                if (phase !== "PLAYER_ACTION") return;
+                phase = "CALCULATING";
+                updateHUD();
+                console.log(
+                    "[AUDIO TRIGGER: Epoch Concluded - Mechanical Clock Shift]",
+                );
+                speak("epoch");
+
+                setTimeout(() => {
+                    processDiplomacyActions();
+                    const harmonicDemo = runPropagation();
+                    runEnemyFriction();
+                    evaluateVibeState();
+
+                    if (epochNumber >= TOTAL_EPOCHS) {
+                        resolveElection();
+                        return;
+                    }
+
+                    epochNumber++;
+                    ap = 3;
+                    phase = "PLAYER_ACTION";
+                    updateHUD();
+                    drawGrid();
+                }, 90);
+            }
+
+            /* ═══════════════════════════════════════════════════════════════
+   ELECTION RESOLUTION
+═══════════════════════════════════════════════════════════════ */
+            function resolveElection() {
+                const { avg, controlled } = globalStats();
+                const pct = (avg * 100).toFixed(1);
+                const distPct = ((controlled / (COLS * ROWS)) * 100).toFixed(1);
+                const overlay = document.getElementById("result-overlay");
+                const titleEl = document.getElementById("result-title");
+                const bodyEl = document.getElementById("result-body");
+                overlay.classList.add("show");
+
+                if (avg > 0.5) {
+                    titleEl.textContent = "ELECTORAL\nVICTORY";
+                    titleEl.className = "win";
+                    bodyEl.innerHTML = `Narrative Dominance: <span class="highlight">${pct}%</span> &nbsp;·&nbsp; Districts Held: <span class="highlight">${controlled}&nbsp;/&nbsp;${COLS * ROWS} (${distPct}%)</span><br><br>The Collaborative Corruption Matrix conceded at 23:47. The Generational Organ of Memes overwhelmed their legacy media channels.<br><br><span class="highlight">[AUDIO TRIGGER: Victory — National Broadcast Override]</span>`;
+                    speak("victory");
+                    console.log(
+                        "[AUDIO TRIGGER: Victory — National Broadcast Override]",
+                    );
+                } else {
+                    titleEl.textContent = "ELECTORAL\nDEFEAT";
+                    titleEl.className = "lose";
+                    bodyEl.innerHTML = `Narrative Dominance: <span class="highlight">${pct}%</span> &nbsp;·&nbsp; Districts Held: <span class="highlight">${controlled}&nbsp;/&nbsp;${COLS * ROWS} (${distPct}%)</span><br><br>The Establishment retained power. Their corner strongholds held the narrative perimeter. MCO position suspended pending review.<br><br><span class="highlight">[AUDIO TRIGGER: Defeat — Static Funeral Drone]</span>`;
+                    speak("defeat");
+                    console.log(
+                        "[AUDIO TRIGGER: Defeat — Static Funeral Drone]",
+                    );
+                }
+                updateHUD();
+                drawGrid();
+            }
+
+            /* ═══════════════════════════════════════════════════════════════
+   CANVAS CLICK
+═══════════════════════════════════════════════════════════════ */
+            canvas.addEventListener("click", function (e) {
+                if (phase !== "PLAYER_ACTION") return;
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                const mx = (e.clientX - rect.left) * scaleX;
+                const my = (e.clientY - rect.top) * scaleY;
+
+                let bestCol = -1,
+                    bestRow = -1,
+                    bestDist = Infinity;
+                for (let c = 0; c < COLS; c++)
+                    for (let r = 0; r < ROWS; r++) {
+                        const { x, y } = hexCenter(c, r);
+                        const d = Math.hypot(mx - x, my - y);
+                        if (d < bestDist) {
+                            bestDist = d;
+                            bestCol = c;
+                            bestRow = r;
+                        }
+                    }
+                if (bestCol < 0 || bestDist >= HEX_SIZE * 1.1) return;
+
+                if (selectedMeme === "standard") {
+                    if (ap < 1) {
+                        flashAPRed();
+                        return;
+                    }
+                    grid[bestCol][bestRow].alignment = 1.0;
+                    ap--;
+                    console.log(
+                        "[AUDIO TRIGGER: Broadcast Meme Deployed - Phase Lock Chime]",
+                    );
+                    speak("broadcast");
+                    triggerPulse(bestCol, bestRow);
+                } else if (selectedMeme === "fortify") {
+                    if (ap < 2) {
+                        flashAPRed();
+                        return;
+                    }
+                    grid[bestCol][bestRow].alignment = 1.0;
+                    grid[bestCol][bestRow].fortified = 3;
+                    ap -= 2;
+                    console.log(
+                        "[AUDIO TRIGGER: Fortification Deployed - Heavy Vault Door]",
+                    );
+                    speak("fortify");
+                    triggerPulse(bestCol, bestRow);
+                }
+                updateHUD();
+            });
+
+            /* ═══════════════════════════════════════════════════════════════
+   KEYBOARD — SPACE / ENTER (excludes INPUT, TEXTAREA, SELECT)
+═══════════════════════════════════════════════════════════════ */
+            document.addEventListener("keydown", function (e) {
+                const tag = e.target.tagName;
+                if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT")
+                    return;
+                if (e.code === "Space" || e.code === "Enter") {
+                    e.preventDefault();
+                    if (phase === "PLAYER_ACTION") executeTurn();
+                }
+            });
+
+            /* ═══════════════════════════════════════════════════════════════
+   HELPERS
+═══════════════════════════════════════════════════════════════ */
+            function triggerPulse(col, row) {
+                pulsingNode = { col, row };
+                drawGrid();
+                setTimeout(() => {
+                    pulsingNode = null;
+                    drawGrid();
+                }, 200);
+            }
+
+            function flashAPRed() {
+                const el = document.getElementById("ap-display");
+                el.classList.add("flash-red");
+                setTimeout(() => el.classList.remove("flash-red"), 420);
+            }
+
+            /* ═══════════════════════════════════════════════════════════════
+   BUTTON WIRING
+═══════════════════════════════════════════════════════════════ */
+            document
+                .getElementById("btn-standard")
+                .addEventListener("click", () => {
+                    selectedMeme = "standard";
+                    updateHUD();
+                });
+            document
+                .getElementById("btn-fortify")
+                .addEventListener("click", () => {
+                    selectedMeme = "fortify";
+                    updateHUD();
+                });
+            document
+                .getElementById("btn-end-epoch")
+                .addEventListener("click", () => {
+                    if (phase === "PLAYER_ACTION") executeTurn();
+                });
+            document
+                .getElementById("btn-comm-send")
+                .addEventListener("click", sendFactionMessage);
+
+            /* MIC BUTTON — ElevenLabs STT if key present, else Web Speech API */
+            document.getElementById("btn-mic").addEventListener("click", () => {
+                if (ELEVEN_KEY) {
+                    if (isElRecording) stopElRecording();
+                    else startElRecording();
+                } else {
+                    if (!recognition) initWebSpeech();
+                    if (!recognition) return;
+                    if (micActive) recognition.stop();
+                    else {
+                        try {
+                            recognition.start();
+                        } catch (ex) {}
+                    }
+                }
+            });
+
+            /* ═══════════════════════════════════════════════════════════════
+   BOOT
+═══════════════════════════════════════════════════════════════ */
+            loadKeysIntoInputs();
+        </script>
+    </body>
+</html>
