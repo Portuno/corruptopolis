@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 
 import { useGameStore } from "@/game/store";
 import { useUser } from "@/hooks/useUser";
@@ -12,8 +13,8 @@ import { RUN_PERKS, UNLOCKS, type PerkId } from "@/game/roguelike";
 
 const PERK_COST = 8;
 const STATUS_BY_OUTCOME = {
-    win: "STATUS: NARRATIVE FLIPPED",
-    loss: "STATUS: SYSTEM LOCKDOWN",
+    win: "VICTORY: NARRATIVE FLIPPED",
+    loss: "DEFEAT: CONNECTION SEVERED",
 } as const;
 
 interface AffinitySplit {
@@ -47,6 +48,7 @@ const getArchetype = (isWin: boolean, split: AffinitySplit) => {
 };
 
 const ResultOverlay = () => {
+    const router = useRouter();
     const result = useGameStore((s) => s.result);
     const matchSaved = useGameStore((s) => s.matchSaved);
     const matchStartedAt = useGameStore((s) => s.matchStartedAt);
@@ -187,6 +189,9 @@ const ResultOverlay = () => {
         setLoadout(selectedLoadout);
         confirmLoadoutAndStartRound();
     };
+    const handleDisconnect = () => {
+        router.push("/");
+    };
 
     const districtsPct = (result.controlled / Math.max(1, result.total)) * 100;
     const creditsCanBeGranted = roundReward?.creditGrantReason !== "none";
@@ -201,16 +206,17 @@ const ResultOverlay = () => {
     const statusLabel = result.isWin ? STATUS_BY_OUTCOME.win : STATUS_BY_OUTCOME.loss;
     const profileLabel = getArchetype(result.isWin, affinity);
     const legacyLine = result.isWin
-        ? "Historical Legacy: You ruptured the consensus map and forced a rewritten narrative."
-        : "Historical Legacy: The counter-wave held, but your signal remains in the underground channels.";
+        ? "The streets of Corruptopolis absorbed your signal as doctrine. You did not just win districts, you rewired public memory."
+        : "The regime held the skyline, but your transmission escaped containment. Their victory report still reads like damage control.";
+    const insurgencyTrend = buildInsurgencyTrend(result.avg, result.isWin);
     const sharePayload = [
-        "== MCO FINAL DOSSIER ==",
+        "== STRATEGIC DEBRIEF ==",
         statusLabel,
-        `MCO PROFILE: ${profileLabel}`,
-        `GLOBAL AFFINITY | EST ${affinity.establishment.toFixed(1)}% · APA ${affinity.apathy.toFixed(1)}% · INS ${affinity.insurgency.toFixed(1)}%`,
-        `MISSION METRICS | Epochs ${result.epochs}/${result.epochs} · Districts ${result.controlled}/${result.total}`,
-        `MEMETIC IMPACT | Dominance ${formatPercent(result.avg, 1)} · Hold Rate ${districtsPct.toFixed(1)}%`,
-        legacyLine,
+        `RANK: ${profileLabel}`,
+        `GLOBAL AFFINITY | INS ${affinity.insurgency.toFixed(1)}% · APA ${affinity.apathy.toFixed(1)}% · EST ${affinity.establishment.toFixed(1)}%`,
+        `TACTICAL METRICS | Epochs ${result.epochs}/${result.epochs} · Districts ${result.controlled}/${result.total}`,
+        `SYSTEM IMPACT | Dominance ${formatPercent(result.avg, 1)} · Hold Rate ${districtsPct.toFixed(1)}%`,
+        `"${legacyLine}"`,
     ].join("\n");
 
     const handleShareDossier = async () => {
@@ -227,27 +233,28 @@ const ResultOverlay = () => {
     };
 
     return (
-        <div
-            className="fixed inset-0 z-40 flex items-center justify-center px-4 py-6"
-            style={{ background: "var(--bg-deep)" }}
-        >
+        <div className="fixed inset-0 z-40 overflow-y-auto px-4 py-6">
+            <div className="strategic-debrief-flicker" aria-hidden="true" />
+            <div
+                className="absolute inset-0"
+                style={{ background: "var(--bg-deep)" }}
+                aria-hidden="true"
+            />
             <div
                 className="pointer-events-none absolute inset-0 flex items-center justify-center"
                 aria-hidden="true"
             >
                 <span
-                    className="rotate-[-22deg] text-3xl font-black uppercase tracking-[8px] opacity-10 md:text-6xl"
+                    className="rotate-[-18deg] text-4xl font-black uppercase tracking-[8px] opacity-20 md:text-7xl"
                     style={{
-                        color: result.isWin
-                            ? "var(--accent-win)"
-                            : "var(--accent-lose)",
+                        color: result.isWin ? "var(--accent-win)" : "var(--accent-lose)",
                     }}
                 >
-                    Strictly Confidential
+                    {result.isWin ? "COMPLETED" : "REDACTED"}
                 </span>
             </div>
             <div
-                className="relative flex w-full max-w-xl flex-col gap-5 rounded-md border p-6 text-center"
+                className="relative mx-auto flex w-full max-w-5xl flex-col gap-5 rounded-md border p-4 md:p-6"
                 style={{
                     background: "var(--bg-panel)",
                     borderColor: result.isWin
@@ -260,105 +267,84 @@ const ResultOverlay = () => {
                     }`,
                 }}
             >
-                <h2
-                    className="text-2xl font-bold uppercase tracking-[6px]"
+                <header
+                    className="rounded border px-4 py-5 text-center md:px-8 md:py-8"
                     style={{
-                        color: result.isWin
-                            ? "var(--accent-win)"
-                            : "var(--accent-lose)",
+                        borderColor: result.isWin ? "var(--accent-win)" : "var(--accent-lose)",
+                        background: result.isWin
+                            ? "rgba(61, 214, 140, 0.08)"
+                            : "rgba(248, 81, 73, 0.08)",
                     }}
                 >
-                    {result.title}
-                </h2>
-                <p
-                    className="text-base font-black uppercase tracking-[3px]"
-                    style={{
-                        color: result.isWin
-                            ? "var(--accent-win)"
-                            : "var(--accent-lose)",
-                    }}
-                >
-                    {statusLabel}
-                </p>
-                <p
-                    className="text-[11px] uppercase tracking-[3px]"
-                    style={{ color: "var(--text-secondary)" }}
-                >
-                    MCO Profile: {profileLabel}
-                </p>
-                <p
-                    className="text-sm leading-relaxed"
-                    style={{ color: "var(--text-secondary)" }}
-                >
-                    {result.body}
-                </p>
-                <div
-                    className="rounded border p-3 text-left text-[11px]"
-                    style={{
-                        borderColor: "var(--border-subtle)",
-                        color: "var(--text-secondary)",
-                    }}
-                >
-                    <p className="mb-2 text-[10px] uppercase tracking-[2px] text-[color:var(--text-muted)]">
-                        Global Affinity Matrix
+                    <p
+                        className="text-xl font-black uppercase tracking-[4px] md:text-4xl md:tracking-[8px]"
+                        style={{ color: result.isWin ? "var(--accent-win)" : "var(--accent-lose)" }}
+                    >
+                        {statusLabel}
                     </p>
-                    <div className="h-3 w-full overflow-hidden rounded-full border border-[color:var(--border-subtle)] bg-[color:var(--bg-surface)]">
-                        <div className="flex h-full w-full">
-                            <span
-                                style={{
-                                    width: `${affinity.establishment}%`,
-                                    background: "#f87171",
-                                }}
-                            />
-                            <span
-                                style={{
-                                    width: `${affinity.apathy}%`,
-                                    background: "#64748b",
-                                }}
-                            />
-                            <span
-                                style={{
-                                    width: `${affinity.insurgency}%`,
-                                    background: "var(--accent-player)",
-                                }}
-                            />
+                    <p className="mt-3 text-[11px] uppercase tracking-[3px] text-[color:var(--text-muted)]">
+                        {result.title}
+                    </p>
+                    <p className="mt-2 text-sm font-semibold uppercase tracking-[3px] text-[color:var(--text-secondary)] md:text-base">
+                        RANK: {profileLabel}
+                    </p>
+                </header>
+                <section className="grid gap-3 md:grid-cols-2">
+                    <div
+                        className="rounded border p-4 text-left"
+                        style={{
+                            borderColor: "var(--border-subtle)",
+                            color: "var(--text-secondary)",
+                        }}
+                    >
+                        <p className="mb-3 text-[10px] uppercase tracking-[2px] text-[color:var(--text-muted)]">
+                            Global Affinity Matrix
+                        </p>
+                        <AffinityBar
+                            label="Insurgency"
+                            value={affinity.insurgency}
+                            color="var(--accent-player)"
+                            trend={insurgencyTrend}
+                        />
+                        <AffinityBar
+                            label="Apathy"
+                            value={affinity.apathy}
+                            color="#64748b"
+                        />
+                        <AffinityBar
+                            label="Establishment"
+                            value={affinity.establishment}
+                            color="#f87171"
+                        />
+                    </div>
+                    <div
+                        className="rounded border p-4 text-left text-[11px]"
+                        style={{
+                            borderColor: "var(--border-subtle)",
+                            color: "var(--text-secondary)",
+                        }}
+                    >
+                        <p className="mb-3 text-[10px] uppercase tracking-[2px] text-[color:var(--text-muted)]">
+                            Operational Stats
+                        </p>
+                        <div className="grid grid-cols-2 gap-3">
+                            <Stat label="Epochs" value={`${result.epochs}/${result.epochs}`} />
+                            <Stat label="Districts" value={`${result.controlled}/${result.total}`} />
+                            <Stat label="Dominance" value={formatPercent(result.avg, 1)} />
+                            <Stat label="Exposure" value={`${districtsPct.toFixed(1)}%`} />
                         </div>
                     </div>
-                    <p className="mt-2 text-[10px] uppercase tracking-[1.5px] text-[color:var(--text-muted)]">
-                        EST {affinity.establishment.toFixed(1)}% | APA {affinity.apathy.toFixed(1)}% | INS {affinity.insurgency.toFixed(1)}%
-                    </p>
-                </div>
-                <div
-                    className="grid grid-cols-2 gap-2 rounded border p-3 text-[11px]"
+                </section>
+                <blockquote
+                    className="rounded border px-4 py-3 text-left text-sm italic"
                     style={{
                         borderColor: "var(--border-subtle)",
                         color: "var(--text-secondary)",
+                        background: "rgba(15, 23, 42, 0.28)",
                     }}
                 >
-                    <div className="space-y-1 text-left">
-                        <p className="text-[10px] uppercase tracking-[2px] text-[color:var(--text-muted)]">
-                            Mission Metrics
-                        </p>
-                        <Stat label="Epochs Completed" value={`${result.epochs}/${result.epochs}`} />
-                        <Stat label="Districts Held" value={`${result.controlled}/${result.total}`} />
-                    </div>
-                    <div className="space-y-1 text-left">
-                        <p className="text-[10px] uppercase tracking-[2px] text-[color:var(--text-muted)]">
-                            Memetic Impact
-                        </p>
-                        <Stat label="Avg Resonance" value={formatPercent(result.avg, 1)} />
-                        <Stat label="System Exposure" value={`${districtsPct.toFixed(1)}%`} />
-                    </div>
-                </div>
-                <p
-                    className="rounded border px-3 py-2 text-left text-[11px] italic"
-                    style={{
-                        borderColor: "var(--border-subtle)",
-                        color: "var(--text-secondary)",
-                    }}
-                >
-                    {legacyLine}
-                </p>
+                    "{legacyLine}"
+                </blockquote>
                 {roundReward ? (
                     <div
                         className="rounded border p-3 text-left text-[11px]"
@@ -510,20 +496,21 @@ const ResultOverlay = () => {
                         </button>
                     </div>
                 ) : null}
-                {result.isWin ? (
-                    <>
-                        <button
-                            type="button"
-                            onClick={openMetaShop}
-                            className="rounded border px-4 py-2 text-xs font-semibold uppercase tracking-[2px]"
-                            style={{
-                                borderColor: "var(--accent-player)",
-                                color: "var(--accent-player)",
-                                background: "var(--accent-player-bg)",
-                            }}
-                        >
-                            Open Meta Shop
-                        </button>
+                <section className="rounded border p-3" style={{ borderColor: "var(--border-subtle)" }}>
+                    {result.isWin ? (
+                        <>
+                            <button
+                                type="button"
+                                onClick={openMetaShop}
+                                className="rounded border px-4 py-2 text-xs font-semibold uppercase tracking-[2px]"
+                                style={{
+                                    borderColor: "var(--accent-player)",
+                                    color: "var(--accent-player)",
+                                    background: "var(--accent-player-bg)",
+                                }}
+                            >
+                                Open Meta Shop
+                            </button>
                         <div className="grid gap-2 text-left">
                             <p className="text-[10px] uppercase tracking-[2px] text-[color:var(--text-muted)]">
                                 Configure loadout (max 2 perks)
@@ -595,20 +582,20 @@ const ResultOverlay = () => {
                                 Continue to next round
                             </button>
                         )}
-                        <button
-                            type="button"
-                            onClick={handleStartNewRun}
-                            className="rounded border px-4 py-2 text-xs font-semibold uppercase tracking-[2px]"
-                            style={{
-                                borderColor: "var(--border-subtle)",
-                                color: "var(--text-secondary)",
-                            }}
-                        >
-                            Initiate New Epoch
-                        </button>
-                    </>
-                ) : (
-                    <>
+                            <button
+                                type="button"
+                                onClick={handleStartNewRun}
+                                className="rounded border px-4 py-2 text-xs font-semibold uppercase tracking-[2px]"
+                                style={{
+                                    borderColor: "var(--border-subtle)",
+                                    color: "var(--text-secondary)",
+                                }}
+                            >
+                                Initiate New Epoch
+                            </button>
+                        </>
+                    ) : (
+                        <>
                         <div className="grid gap-2 text-left">
                             <p className="text-[10px] uppercase tracking-[2px] text-[color:var(--text-muted)]">
                                 Configure loadout for next run (max 2 perks)
@@ -661,31 +648,56 @@ const ResultOverlay = () => {
                         >
                             Initiate New Epoch
                         </button>
-                        <button
-                            type="button"
-                            onClick={handleRestart}
-                            className="rounded border px-4 py-2 text-xs font-semibold uppercase tracking-[2px]"
-                            style={{
-                                borderColor: "var(--border-subtle)",
-                                color: "var(--text-secondary)",
-                            }}
-                        >
-                            Re-Boot Simulation
-                        </button>
-                    </>
-                )}
-                <button
-                    type="button"
-                    onClick={handleShareDossier}
-                    className="rounded border px-4 py-2 text-xs font-semibold uppercase tracking-[2px]"
-                    style={{
-                        borderColor: "var(--accent-player)",
-                        color: "var(--accent-player)",
-                        background: "var(--accent-player-bg)",
-                    }}
-                >
-                    Share Dossier
-                </button>
+                            <button
+                                type="button"
+                                onClick={handleRestart}
+                                className="rounded border px-4 py-2 text-xs font-semibold uppercase tracking-[2px]"
+                                style={{
+                                    borderColor: "var(--border-subtle)",
+                                    color: "var(--text-secondary)",
+                                }}
+                            >
+                                Re-Boot Simulation
+                            </button>
+                        </>
+                    )}
+                </section>
+                <div className="flex flex-wrap items-center justify-center gap-2 border-t border-[color:var(--border-subtle)] pt-4">
+                    <button
+                        type="button"
+                        onClick={handleShareDossier}
+                        className="rounded border px-4 py-2 text-xs font-semibold uppercase tracking-[2px]"
+                        style={{
+                            borderColor: "var(--accent-player)",
+                            color: "var(--accent-player)",
+                            background: "var(--accent-player-bg)",
+                        }}
+                    >
+                        Export Intel
+                    </button>
+                    <button
+                        type="button"
+                        onClick={handleRestart}
+                        className="rounded border px-4 py-2 text-xs font-semibold uppercase tracking-[2px]"
+                        style={{
+                            borderColor: "var(--border-subtle)",
+                            color: "var(--text-secondary)",
+                        }}
+                    >
+                        Re-Boot Simulation
+                    </button>
+                    <button
+                        type="button"
+                        onClick={handleDisconnect}
+                        className="rounded border px-4 py-2 text-xs font-semibold uppercase tracking-[2px]"
+                        style={{
+                            borderColor: "var(--border-subtle)",
+                            color: "var(--text-secondary)",
+                        }}
+                    >
+                        Disconnect
+                    </button>
+                </div>
             </div>
         </div>
     );
@@ -712,5 +724,64 @@ const Stat = ({ label, value }: StatProps) => (
         </span>
     </div>
 );
+
+interface AffinityBarProps {
+    label: string;
+    value: number;
+    color: string;
+    trend?: number[];
+}
+
+const AffinityBar = ({ label, value, color, trend }: AffinityBarProps) => (
+    <div className="mb-3">
+        <div className="mb-1 flex items-center justify-between gap-2 text-[10px] uppercase tracking-[1.8px]">
+            <span className="text-[color:var(--text-secondary)]">{label}</span>
+            <div className="flex items-center gap-2">
+                {trend ? <Sparkline points={trend} color={color} /> : null}
+                <span className="text-[color:var(--text-muted)]">{value.toFixed(1)}%</span>
+            </div>
+        </div>
+        <div className="h-2 w-full overflow-hidden rounded-full border border-[color:var(--border-subtle)] bg-[color:var(--bg-surface)]">
+            <span className="block h-full rounded-full" style={{ width: `${value}%`, background: color }} />
+        </div>
+    </div>
+);
+
+interface SparklineProps {
+    points: number[];
+    color: string;
+}
+
+const Sparkline = ({ points, color }: SparklineProps) => {
+    if (points.length < 2) return null;
+    const width = 74;
+    const height = 18;
+    const max = Math.max(...points);
+    const min = Math.min(...points);
+    const spread = Math.max(1, max - min);
+    const d = points
+        .map((point, idx) => {
+            const x = (idx / (points.length - 1)) * width;
+            const y = height - ((point - min) / spread) * height;
+            return `${idx === 0 ? "M" : "L"}${x.toFixed(1)} ${y.toFixed(1)}`;
+        })
+        .join(" ");
+    return (
+        <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} aria-hidden="true">
+            <path d={d} fill="none" stroke={color} strokeWidth="1.5" />
+        </svg>
+    );
+};
+
+const buildInsurgencyTrend = (avg: number, isWin: boolean): number[] => {
+    const base = avg * 100;
+    const anchor = isWin ? 56 : 44;
+    return Array.from({ length: 12 }, (_, idx) => {
+        const progress = idx / 11;
+        const drift = (base - anchor) * progress;
+        const wobble = Math.sin((idx + 1) * 0.85) * 4;
+        return clampPercent(anchor + drift + wobble);
+    });
+};
 
 export default ResultOverlay;

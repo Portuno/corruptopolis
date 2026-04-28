@@ -171,6 +171,31 @@
 }
 
 @layer components {
+    .strategic-debrief-flicker {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        z-index: 2;
+        background:
+            linear-gradient(
+                to bottom,
+                rgba(248, 250, 252, 0.02) 0%,
+                rgba(248, 250, 252, 0) 18%,
+                rgba(248, 250, 252, 0.015) 52%,
+                rgba(248, 250, 252, 0) 100%
+            ),
+            repeating-linear-gradient(
+                to bottom,
+                rgba(148, 163, 184, 0.06) 0px,
+                rgba(148, 163, 184, 0.06) 1px,
+                transparent 2px,
+                transparent 4px
+            );
+        mix-blend-mode: screen;
+        opacity: 0.28;
+        animation: strategic-debrief-flicker 3.2s steps(6, end) infinite;
+    }
+
     .panel {
         background: var(--bg-panel);
         border: 1px solid var(--border-subtle);
@@ -688,5 +713,18 @@
         background-position:
             0 220%,
             40% 250%;
+    }
+}
+
+@keyframes strategic-debrief-flicker {
+    0%,
+    100% {
+        opacity: 0.24;
+    }
+    35% {
+        opacity: 0.32;
+    }
+    70% {
+        opacity: 0.2;
     }
 }
