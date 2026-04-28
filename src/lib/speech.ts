@@ -8,10 +8,41 @@ export interface SpeakOptions {
     voiceId?: string;
 }
 
+let activeAudio: HTMLAudioElement | null = null;
+let activeAudioUrl: string | null = null;
+let speakRequestSeq = 0;
+let lastSpokenText = "";
+let lastSpokenAt = 0;
+const REPEAT_TEXT_COOLDOWN_MS = 9000;
+
+const stopActiveSpeech = (): void => {
+    if (activeAudio) {
+        activeAudio.pause();
+        activeAudio.currentTime = 0;
+        activeAudio = null;
+    }
+    if (activeAudioUrl) {
+        URL.revokeObjectURL(activeAudioUrl);
+        activeAudioUrl = null;
+    }
+};
+
 export const speakViaProxy = async ({
     text,
     voiceId,
 }: SpeakOptions): Promise<boolean> => {
+    const now = Date.now();
+    const normalizedText = text.trim().toLowerCase();
+    const isRepeatedRecently =
+        normalizedText.length > 0 &&
+        normalizedText === lastSpokenText &&
+        now - lastSpokenAt < REPEAT_TEXT_COOLDOWN_MS;
+    if (isRepeatedRecently) {
+        return false;
+    }
+
+    const requestId = ++speakRequestSeq;
+    stopActiveSpeech();
     try {
         const clientKey = readLocalElevenKey() || undefined;
         const res = await fetch("/api/eleven/tts", {
@@ -24,10 +55,29 @@ export const speakViaProxy = async ({
             return false;
         }
         const blob = await res.blob();
+
+        // If another speak request started while this one was loading,
+        // discard this audio so stale voice lines never overlap.
+        if (requestId !== speakRequestSeq) {
+            return false;
+        }
+
         const url = URL.createObjectURL(blob);
         const audio = new Audio(url);
-        audio.onended = () => URL.revokeObjectURL(url);
+        activeAudio = audio;
+        activeAudioUrl = url;
+        audio.onended = () => {
+            if (activeAudio === audio) {
+                activeAudio = null;
+            }
+            if (activeAudioUrl === url) {
+                URL.revokeObjectURL(url);
+                activeAudioUrl = null;
+            }
+        };
         await audio.play().catch(() => undefined);
+        lastSpokenText = normalizedText;
+        lastSpokenAt = Date.now();
         return true;
     } catch (err) {
         logger.debug("speech", "tts proxy threw", {
