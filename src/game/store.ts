@@ -1,6 +1,7 @@
 import { create } from "zustand";
 
 import {
+    DIFFICULTY_CONFIG,
     EPOCH_LABELS,
     FORTIFY_DURATION,
     STARTING_AP,
@@ -39,6 +40,7 @@ import type {
     DiplomacyAction,
     EnemyIntent,
     ElementKey,
+    GameDifficulty,
     Grid,
     LivingHiveIntensity,
     MatchResult,
@@ -109,11 +111,13 @@ interface GameState {
     onPropagationEvent: ((event: "harmonic", data?: ElementKey) => void) | null;
     livingHiveEnabled: boolean;
     livingHiveIntensity: LivingHiveIntensity;
+    gameDifficulty: GameDifficulty;
     setOnPropagationEvent: (
         cb: ((event: "harmonic", data?: ElementKey) => void) | null,
     ) => void;
     setLivingHiveEnabled: (enabled: boolean) => void;
     setLivingHiveIntensity: (intensity: LivingHiveIntensity) => void;
+    setGameDifficulty: (difficulty: GameDifficulty) => void;
     selectCadence: (n: number) => void;
     selectMemeMode: (m: MemeMode) => void;
     launchGame: () => void;
@@ -371,6 +375,15 @@ const readLivingHiveIntensity = (): LivingHiveIntensity => {
     return "medium";
 };
 
+const readGameDifficulty = (): GameDifficulty => {
+    if (typeof window === "undefined") return "medium";
+    const value = window.localStorage.getItem("ui.gameDifficulty");
+    if (value === "easy" || value === "medium" || value === "hard") {
+        return value;
+    }
+    return "medium";
+};
+
 export const useGameStore = create<GameState>((set, get) => ({
     phase: "PLAYER_ACTION",
     epochNumber: 1,
@@ -393,7 +406,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     epochCounter: `EPOCH 1 / ${TOTAL_EPOCHS}`,
     epochProgress: 0,
     result: null,
-    enemyIntent: predictEnemyIntent([], 1),
+    enemyIntent: predictEnemyIntent([], 1, DIFFICULTY_CONFIG.medium.enemyAp),
     activeCrisis: null,
     crisisDebrief: null,
     lastCrisisElement: null,
@@ -410,6 +423,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     onPropagationEvent: null,
     livingHiveEnabled: readLivingHiveEnabled(),
     livingHiveIntensity: readLivingHiveIntensity(),
+    gameDifficulty: readGameDifficulty(),
 
     setOnPropagationEvent: (cb) => set({ onPropagationEvent: cb }),
 
@@ -427,12 +441,25 @@ export const useGameStore = create<GameState>((set, get) => ({
         set({ livingHiveIntensity: intensity });
     },
 
+    setGameDifficulty: (difficulty) => {
+        if (typeof window !== "undefined") {
+            window.localStorage.setItem("ui.gameDifficulty", difficulty);
+        }
+        const s = get();
+        const enemyAp = DIFFICULTY_CONFIG[difficulty].enemyAp;
+        set({
+            gameDifficulty: difficulty,
+            enemyIntent: predictEnemyIntent(s.grid, s.epochNumber, enemyAp),
+        });
+    },
+
     selectCadence: (n) => set({ selectedCadence: n }),
 
     selectMemeMode: (m) => set({ selectedMeme: m }),
 
     launchGame: () => {
         const s = get();
+        const enemyAp = DIFFICULTY_CONFIG[s.gameDifficulty].enemyAp;
         const modifiers = computeRunModifiers(
             s.metaProgress.equippedPerks,
             s.metaProgress.campaign.activeNerfs,
@@ -454,7 +481,7 @@ export const useGameStore = create<GameState>((set, get) => ({
             vibeLabel: vibe.label,
             vibeKey: vibe.key,
             result: null,
-            enemyIntent: predictEnemyIntent(grid, 1),
+            enemyIntent: predictEnemyIntent(grid, 1, enemyAp),
             activeCrisis: null,
             crisisDebrief: null,
             lastCrisisElement: null,
@@ -571,6 +598,7 @@ export const useGameStore = create<GameState>((set, get) => ({
 
         setTimeout(() => {
             const next = get();
+            const enemyAp = DIFFICULTY_CONFIG[next.gameDifficulty].enemyAp;
             const grid = next.grid.map((column) =>
                 column.map((node) => ({ ...node })),
             );
@@ -588,7 +616,7 @@ export const useGameStore = create<GameState>((set, get) => ({
             });
             runEnemyFriction(grid, next.epochNumber, {
                 enemyDragMultiplier: modifiers.enemyDragMultiplier,
-            });
+            }, enemyAp);
 
             const vibe = evaluateVibe(computeGlobalStats(grid).avg);
             const cb = next.onPropagationEvent;
@@ -658,7 +686,7 @@ export const useGameStore = create<GameState>((set, get) => ({
                     vibeLabel: vibe.label,
                     vibeKey: vibe.key,
                     result,
-                    enemyIntent: predictEnemyIntent(grid, next.epochNumber),
+                    enemyIntent: predictEnemyIntent(grid, next.epochNumber, enemyAp),
                     phase: "ROUND_REWARD",
                     activeCrisis: null,
                     crisisDebrief: null,
@@ -689,7 +717,7 @@ export const useGameStore = create<GameState>((set, get) => ({
                     crisisDebrief: null,
                     epochNumber: newEpoch,
                     ap: startingAp,
-                    enemyIntent: predictEnemyIntent(grid, newEpoch),
+                    enemyIntent: predictEnemyIntent(grid, newEpoch, enemyAp),
                     ...computeDerived(grid, newEpoch),
                 });
                 return;
@@ -703,7 +731,7 @@ export const useGameStore = create<GameState>((set, get) => ({
                 phase: "PLAYER_ACTION",
                 epochNumber: newEpoch,
                 ap: startingAp,
-                enemyIntent: predictEnemyIntent(grid, newEpoch),
+                enemyIntent: predictEnemyIntent(grid, newEpoch, enemyAp),
                 ...computeDerived(grid, newEpoch),
             });
         }, 90);
@@ -864,6 +892,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     confirmLoadoutAndStartRound: () => {
         const s = get();
         const grid = initialGrid();
+        const enemyAp = DIFFICULTY_CONFIG[s.gameDifficulty].enemyAp;
         const vibe = evaluateVibe(computeGlobalStats(grid).avg);
         const modifiers = computeRunModifiers(
             s.metaProgress.equippedPerks,
@@ -888,7 +917,7 @@ export const useGameStore = create<GameState>((set, get) => ({
             vibeLabel: vibe.label,
             vibeKey: vibe.key,
             result: null,
-            enemyIntent: predictEnemyIntent(grid, 1),
+            enemyIntent: predictEnemyIntent(grid, 1, enemyAp),
             activeCrisis: null,
             crisisDebrief: null,
             lastCrisisElement: null,
@@ -936,6 +965,7 @@ export const useGameStore = create<GameState>((set, get) => ({
         };
         persistMeta(refreshedMeta);
         const grid = initialGrid();
+        const enemyAp = DIFFICULTY_CONFIG[s.gameDifficulty].enemyAp;
         const vibe = evaluateVibe(computeGlobalStats(grid).avg);
         const modifiers = computeRunModifiers(
             refreshedMeta.equippedPerks,
@@ -955,7 +985,7 @@ export const useGameStore = create<GameState>((set, get) => ({
             vibeLabel: vibe.label,
             vibeKey: vibe.key,
             result: null,
-            enemyIntent: predictEnemyIntent(grid, 1),
+            enemyIntent: predictEnemyIntent(grid, 1, enemyAp),
             activeCrisis: null,
             crisisDebrief: null,
             lastCrisisElement: null,

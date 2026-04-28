@@ -47,3 +47,9 @@ export const ENEMY_CORNERS: ReadonlyArray<[number, number]> = [
 export const ENEMY_THRESHOLD = 0.18;
 export const PLAYER_DOMINANCE_THRESHOLD = 0.8;
 export const VICTORY_THRESHOLD = 0.5;
+
+export const DIFFICULTY_CONFIG = {
+    easy: { year: 2027, enemyAp: 1, label: "Easy" },
+    medium: { year: 2031, enemyAp: 2, label: "Medium" },
+    hard: { year: 2035, enemyAp: 3, label: "Hard" },
+} as const;

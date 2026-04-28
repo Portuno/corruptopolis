@@ -23,7 +23,7 @@ export interface PropagationModifiers {
     diplomacyScaleMultiplier: number;
 }
 
-const ENEMY_AP_PER_TURN = 3;
+const DEFAULT_ENEMY_AP_PER_TURN = 2;
 
 export const computeGlobalStats = (grid: Grid): GlobalStats => {
     let total = 0;
@@ -68,7 +68,7 @@ const computeEnemySpreadRate = (epochNumber: number): number =>
 const computeEnemyStrikeCount = (epochNumber: number): number =>
     Math.min(4 + Math.floor((epochNumber - 1) / 2), 8);
 
-const computeEnemyInfiltrationCount = (): number => ENEMY_AP_PER_TURN;
+const computeEnemyInfiltrationCount = (enemyApPerTurn: number): number => enemyApPerTurn;
 
 const planEnemyApMoves = (
     grid: Grid,
@@ -95,8 +95,9 @@ const planEnemyApMoves = (
 export const predictEnemyIntent = (
     grid: Grid,
     epochNumber: number,
+    enemyApPerTurn = DEFAULT_ENEMY_AP_PER_TURN,
 ): EnemyIntent => {
-    const infiltration = computeEnemyInfiltrationCount();
+    const infiltration = computeEnemyInfiltrationCount(enemyApPerTurn);
     const strikes = computeEnemyStrikeCount(epochNumber);
     const spread = computeEnemySpreadRate(epochNumber);
     const plannedTiles = grid.length === 0 ? [] : planEnemyApMoves(grid, infiltration);
@@ -108,12 +109,12 @@ export const predictEnemyIntent = (
             : "none";
     return {
         epoch: epochNumber,
-        ap: ENEMY_AP_PER_TURN,
+        ap: enemyApPerTurn,
         infiltration,
         strikes,
         spread,
         plannedTiles,
-        summary: `Next enemy turn: spend ${ENEMY_AP_PER_TURN} AP on tiles ${tileSummary}; launch ${strikes} strike${strikes === 1 ? "" : "s"}; spread ${(spread * 100).toFixed(0)}%.`,
+        summary: `Next enemy turn: spend ${enemyApPerTurn} AP on tiles ${tileSummary}; launch ${strikes} strike${strikes === 1 ? "" : "s"}; spread ${(spread * 100).toFixed(0)}%.`,
     };
 };
 
@@ -156,6 +157,7 @@ export const runEnemyFriction = (
     grid: Grid,
     epochNumber: number,
     modifiers?: Partial<PropagationModifiers>,
+    enemyApPerTurn = DEFAULT_ENEMY_AP_PER_TURN,
 ): void => {
     ENEMY_CORNERS.forEach(([c, r]) => {
         grid[c][r].alignment = 0.0;
@@ -214,7 +216,7 @@ export const runEnemyFriction = (
         grid[candidates[i][0]][candidates[i][1]].alignment = 0.0;
     }
 
-    const enemyApPlays = planEnemyApMoves(grid, ENEMY_AP_PER_TURN);
+    const enemyApPlays = planEnemyApMoves(grid, enemyApPerTurn);
     for (const { col: c, row: r } of enemyApPlays) {
         const seededAlignment = Math.max(
             0,

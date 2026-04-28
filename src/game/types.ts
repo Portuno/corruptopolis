@@ -37,6 +37,7 @@ export type MemeMode = "strike" | "echo" | "astroturf" | "deepfake";
 export type VibeKey = "" | "dominance" | "friction" | "hostile";
 
 export type LivingHiveIntensity = "low" | "medium" | "high";
+export type GameDifficulty = "easy" | "medium" | "hard";
 
 export interface DiplomacyAction {
     id: number;

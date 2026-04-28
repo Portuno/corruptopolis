@@ -6,8 +6,9 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import ThemeToggle from "@/components/theme/ThemeToggle";
+import { DIFFICULTY_CONFIG } from "@/game/constants";
 import { useGameStore } from "@/game/store";
-import type { LivingHiveIntensity } from "@/game/types";
+import type { GameDifficulty, LivingHiveIntensity } from "@/game/types";
 import { useUser } from "@/hooks/useUser";
 import {
     readLocalElevenKey,
@@ -17,6 +18,7 @@ import {
 } from "@/lib/local-keys";
 
 const LIVING_HIVE_LEVELS: LivingHiveIntensity[] = ["low", "medium", "high"];
+const DIFFICULTY_LEVELS: GameDifficulty[] = ["easy", "medium", "hard"];
 
 const SettingsDrawer = () => {
     const { user, supabaseEnabled, isAnonymous, signOut } = useUser();
@@ -28,6 +30,8 @@ const SettingsDrawer = () => {
     const livingHiveIntensity = useGameStore((s) => s.livingHiveIntensity);
     const setLivingHiveEnabled = useGameStore((s) => s.setLivingHiveEnabled);
     const setLivingHiveIntensity = useGameStore((s) => s.setLivingHiveIntensity);
+    const gameDifficulty = useGameStore((s) => s.gameDifficulty);
+    const setGameDifficulty = useGameStore((s) => s.setGameDifficulty);
 
     useEffect(() => {
         if (!open) return;
@@ -84,6 +88,58 @@ const SettingsDrawer = () => {
                     <Dialog.Description className="sr-only">
                         Theme, API keys, and account.
                     </Dialog.Description>
+
+                    <section className="flex flex-col gap-2">
+                        <span
+                            className="text-[10px] uppercase tracking-[3px]"
+                            style={{ color: "var(--text-muted)" }}
+                        >
+                            Campaign Difficulty
+                        </span>
+                        <div
+                            className="grid grid-cols-3 gap-2"
+                            role="radiogroup"
+                            aria-label="Campaign difficulty"
+                        >
+                            {DIFFICULTY_LEVELS.map((difficulty) => {
+                                const config = DIFFICULTY_CONFIG[difficulty];
+                                const isActive = gameDifficulty === difficulty;
+                                return (
+                                    <button
+                                        key={difficulty}
+                                        type="button"
+                                        role="radio"
+                                        aria-checked={isActive}
+                                        aria-label={`Set difficulty to ${config.label}`}
+                                        onClick={() => setGameDifficulty(difficulty)}
+                                        className="rounded border px-2 py-1.5 text-[10px] font-semibold uppercase tracking-[1.5px] transition"
+                                        style={{
+                                            borderColor: isActive
+                                                ? "var(--accent-player)"
+                                                : "var(--border-subtle)",
+                                            background: isActive
+                                                ? "var(--accent-player-bg)"
+                                                : "transparent",
+                                            color: isActive
+                                                ? "var(--accent-player)"
+                                                : "var(--text-secondary)",
+                                        }}
+                                    >
+                                        {config.label}
+                                        <span className="mt-0.5 block text-[9px] font-normal tracking-[1px]">
+                                            {config.year} · EN AP {config.enemyAp}
+                                        </span>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                        <p
+                            className="text-[11px]"
+                            style={{ color: "var(--text-muted)" }}
+                        >
+                            Default is Medium (campaign year {DIFFICULTY_CONFIG.medium.year}).
+                        </p>
+                    </section>
 
                     <section className="flex flex-col gap-2">
                         <span
