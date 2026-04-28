@@ -13,8 +13,12 @@ import { RUN_PERKS, UNLOCKS, type PerkId } from "@/game/roguelike";
 
 const PERK_COST = 8;
 const STATUS_BY_OUTCOME = {
-    win: "VICTORY: NARRATIVE FLIPPED",
-    loss: "DEFEAT: CONNECTION SEVERED",
+    win: "NARRATIVE FLIPPED",
+    loss: "SYSTEM LOCKDOWN",
+} as const;
+const OUTCOME_HEADLINE_BY_OUTCOME = {
+    win: "ELECTORAL VICTORY",
+    loss: "ELECTORAL DEFEAT",
 } as const;
 
 interface AffinitySplit {
@@ -204,6 +208,9 @@ const ResultOverlay = () => {
     };
     const affinity = normalizeAffinity(rawAffinity);
     const statusLabel = result.isWin ? STATUS_BY_OUTCOME.win : STATUS_BY_OUTCOME.loss;
+    const outcomeHeadline = result.isWin
+        ? OUTCOME_HEADLINE_BY_OUTCOME.win
+        : OUTCOME_HEADLINE_BY_OUTCOME.loss;
     const profileLabel = getArchetype(result.isWin, affinity);
     const legacyLine = result.isWin
         ? "The streets of Corruptopolis absorbed your signal as doctrine. You did not just win districts, you rewired public memory."
@@ -211,7 +218,8 @@ const ResultOverlay = () => {
     const insurgencyTrend = buildInsurgencyTrend(result.avg, result.isWin);
     const sharePayload = [
         "== STRATEGIC DEBRIEF ==",
-        statusLabel,
+        `STATUS CODE: ${statusLabel}`,
+        `OUTCOME: ${outcomeHeadline}`,
         `RANK: ${profileLabel}`,
         `GLOBAL AFFINITY | INS ${affinity.insurgency.toFixed(1)}% · APA ${affinity.apathy.toFixed(1)}% · EST ${affinity.establishment.toFixed(1)}%`,
         `TACTICAL METRICS | Epochs ${result.epochs}/${result.epochs} · Districts ${result.controlled}/${result.total}`,
@@ -233,7 +241,7 @@ const ResultOverlay = () => {
     };
 
     return (
-        <div className="fixed inset-0 z-40 overflow-y-auto px-4 py-6">
+        <div className="fixed inset-0 z-40 overflow-hidden px-2 py-2 md:px-4 md:py-4">
             <div className="strategic-debrief-flicker" aria-hidden="true" />
             <div
                 className="absolute inset-0"
@@ -245,7 +253,7 @@ const ResultOverlay = () => {
                 aria-hidden="true"
             >
                 <span
-                    className="rotate-[-18deg] text-4xl font-black uppercase tracking-[8px] opacity-20 md:text-7xl"
+                    className="rotate-[-17deg] text-[clamp(2.25rem,7vh,5.4rem)] font-black uppercase tracking-[0.4em] opacity-20"
                     style={{
                         color: result.isWin ? "var(--accent-win)" : "var(--accent-lose)",
                     }}
@@ -254,7 +262,7 @@ const ResultOverlay = () => {
                 </span>
             </div>
             <div
-                className="relative mx-auto flex w-full max-w-5xl flex-col gap-5 rounded-md border p-4 md:p-6"
+                className="relative mx-auto grid h-full w-full max-w-7xl grid-rows-[15%_60%_25%] gap-3 rounded-md border p-2 md:gap-4 md:p-4"
                 style={{
                     background: "var(--bg-panel)",
                     borderColor: result.isWin
@@ -268,36 +276,47 @@ const ResultOverlay = () => {
                 }}
             >
                 <header
-                    className="rounded border px-4 py-5 text-center md:px-8 md:py-8"
+                    className="grid h-full grid-cols-12 items-center gap-2 rounded border px-3 md:px-5"
                     style={{
-                        borderColor: result.isWin ? "var(--accent-win)" : "var(--accent-lose)",
+                        borderColor: result.isWin
+                            ? "rgba(56, 189, 248, 0.45)"
+                            : "rgba(248, 81, 73, 0.55)",
                         background: result.isWin
-                            ? "rgba(61, 214, 140, 0.08)"
-                            : "rgba(248, 81, 73, 0.08)",
+                            ? "rgba(8, 22, 36, 0.68)"
+                            : "rgba(32, 7, 11, 0.7)",
                     }}
                 >
-                    <p
-                        className="text-xl font-black uppercase tracking-[4px] md:text-4xl md:tracking-[8px]"
-                        style={{ color: result.isWin ? "var(--accent-win)" : "var(--accent-lose)" }}
-                    >
+                    <p className="col-span-3 text-left text-[clamp(0.62rem,1.45vh,0.88rem)] font-semibold uppercase tracking-[0.25em] text-[color:var(--text-secondary)]">
                         {statusLabel}
                     </p>
-                    <p className="mt-3 text-[11px] uppercase tracking-[3px] text-[color:var(--text-muted)]">
-                        {result.title}
+                    <p
+                        className="col-span-6 text-center text-[clamp(1.15rem,4.2vh,3rem)] font-black uppercase tracking-[0.14em]"
+                        style={{
+                            color: result.isWin ? "var(--accent-player)" : "var(--accent-lose)",
+                        }}
+                    >
+                        {outcomeHeadline}
                     </p>
-                    <p className="mt-2 text-sm font-semibold uppercase tracking-[3px] text-[color:var(--text-secondary)] md:text-base">
-                        RANK: {profileLabel}
+                    <p className="col-span-3 text-right text-[clamp(0.6rem,1.35vh,0.82rem)] font-semibold uppercase tracking-[0.24em] text-[color:var(--text-secondary)]">
+                        {profileLabel}
                     </p>
                 </header>
-                <section className="grid gap-3 md:grid-cols-2">
+                <section className="grid h-full grid-cols-12 gap-3 overflow-hidden">
                     <div
-                        className="rounded border p-4 text-left"
+                        className="col-span-4 flex h-full flex-col rounded border p-3 text-left md:p-4"
                         style={{
                             borderColor: "var(--border-subtle)",
                             color: "var(--text-secondary)",
                         }}
                     >
-                        <p className="mb-3 text-[10px] uppercase tracking-[2px] text-[color:var(--text-muted)]">
+                        <p className="mb-2 text-[clamp(0.56rem,1.2vh,0.7rem)] uppercase tracking-[0.24em] text-[color:var(--text-muted)]">
+                            Outcome Brief
+                        </p>
+                        <p className="mb-3 text-[clamp(0.65rem,1.35vh,0.85rem)] leading-relaxed text-[color:var(--text-secondary)]">
+                            {result.body.split(".")[0]?.trim()}. Narrative pressure settled at{" "}
+                            {formatPercent(result.avg, 1)}.
+                        </p>
+                        <p className="mb-2 text-[clamp(0.56rem,1.2vh,0.7rem)] uppercase tracking-[0.24em] text-[color:var(--text-muted)]">
                             Global Affinity Matrix
                         </p>
                         <AffinityBar
@@ -316,388 +335,259 @@ const ResultOverlay = () => {
                             value={affinity.establishment}
                             color="#f87171"
                         />
+                        <p className="mb-2 mt-1 text-[clamp(0.56rem,1.2vh,0.7rem)] uppercase tracking-[0.24em] text-[color:var(--text-muted)]">
+                            Element Echoes
+                        </p>
+                        <div className="grid grid-cols-3 gap-1.5">
+                            {buildElementEchoes(result.avg).map((element) => (
+                                <ElementBadge key={element.name} name={element.name} level={element.level} />
+                            ))}
+                        </div>
                     </div>
                     <div
-                        className="rounded border p-4 text-left text-[11px]"
+                        className="col-span-4 flex h-full flex-col rounded border p-3 text-left md:p-4"
                         style={{
                             borderColor: "var(--border-subtle)",
                             color: "var(--text-secondary)",
                         }}
                     >
-                        <p className="mb-3 text-[10px] uppercase tracking-[2px] text-[color:var(--text-muted)]">
-                            Operational Stats
+                        <p className="mb-3 text-[clamp(0.56rem,1.2vh,0.7rem)] uppercase tracking-[0.24em] text-[color:var(--text-muted)]">
+                            Core Metrics
                         </p>
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid h-full grid-cols-2 gap-2 md:gap-3">
                             <Stat label="Epochs" value={`${result.epochs}/${result.epochs}`} />
                             <Stat label="Districts" value={`${result.controlled}/${result.total}`} />
                             <Stat label="Dominance" value={formatPercent(result.avg, 1)} />
                             <Stat label="Exposure" value={`${districtsPct.toFixed(1)}%`} />
                         </div>
                     </div>
-                </section>
-                <blockquote
-                    className="rounded border px-4 py-3 text-left text-sm italic"
-                    style={{
-                        borderColor: "var(--border-subtle)",
-                        color: "var(--text-secondary)",
-                        background: "rgba(15, 23, 42, 0.28)",
-                    }}
-                >
-                    "{legacyLine}"
-                </blockquote>
-                {roundReward ? (
                     <div
-                        className="rounded border p-3 text-left text-[11px]"
+                        className="col-span-4 flex h-full flex-col rounded border p-3 text-left md:p-4"
                         style={{
                             borderColor: "var(--border-subtle)",
                             color: "var(--text-secondary)",
                         }}
                     >
-                        <p className="mb-1 text-[10px] uppercase tracking-[2px] text-[color:var(--text-muted)]">
-                            Round {roundNumber} Rewards
-                        </p>
-                        <p>
-                            Score:{" "}
-                            <span className="font-semibold text-[color:var(--text-primary)]">
-                                {roundReward.score}
-                            </span>{" "}
-                            (Avg +{roundReward.avgBonus}, Districts +
-                            {roundReward.districtBonus}, Efficiency +
-                            {roundReward.efficiencyBonus}, Streak x
-                            {roundReward.streakMultiplier.toFixed(2)})
-                        </p>
-                        <p>
-                            Campaign Wins:{" "}
-                            <span className="font-semibold text-[color:var(--text-primary)]">
-                                {metaProgress.campaign.wins}/12
-                            </span>
-                        </p>
-                        <p>
-                            Meta Credits earned:{" "}
-                            <span className="font-semibold text-[color:var(--accent-player)]">
-                                +{roundReward.creditsEarned}
-                            </span>
-                            {!creditsCanBeGranted ? " (none on non-final wins)" : ""}
-                        </p>
-                        <p>
-                            Total Meta Credits:{" "}
-                            <span className="font-semibold text-[color:var(--text-primary)]">
-                                {metaProgress.credits}
-                            </span>
-                        </p>
-                        {metaProgress.campaign.done ? (
-                            <p className="text-[color:var(--accent-win)]">
-                                Campaign DONE: 12 consecutive wins completed.
+                        <div className="mb-2 flex items-center justify-between gap-2">
+                            <p className="text-[clamp(0.56rem,1.2vh,0.7rem)] uppercase tracking-[0.24em] text-[color:var(--text-muted)]">
+                                Loadout Box
                             </p>
-                        ) : null}
-                    </div>
-                ) : null}
-                {saveStatus ? (
-                    <p
-                        className="text-[11px]"
-                        style={{ color: "var(--text-muted)" }}
-                        aria-live="polite"
-                    >
-                        {saveStatus}
-                    </p>
-                ) : null}
-                {shareStatus ? (
-                    <p
-                        className="text-[11px]"
-                        style={{ color: "var(--text-muted)" }}
-                        aria-live="polite"
-                    >
-                        {shareStatus}
-                    </p>
-                ) : null}
-                {metaShopOpen ? (
-                    <div
-                        className="rounded border p-3 text-left"
-                        style={{ borderColor: "var(--border-subtle)" }}
-                    >
-                        <p className="mb-2 text-[10px] uppercase tracking-[2px] text-[color:var(--text-muted)]">
-                            Meta Shop
-                        </p>
-                        <div className="flex flex-col gap-2">
-                            {RUN_PERKS.map((perk) => {
-                                const owned = metaProgress.ownedPerks[perk.id];
-                                const affordable = metaProgress.credits >= PERK_COST;
-                                return (
-                                    <button
-                                        key={perk.id}
-                                        type="button"
-                                        disabled={owned || !affordable}
-                                        onClick={() => {
-                                            buyPerk(perk.id);
-                                        }}
-                                        className="rounded border px-3 py-2 text-left text-[11px] disabled:opacity-50"
-                                        style={{
-                                            borderColor: owned
-                                                ? "var(--accent-confirm)"
-                                                : "var(--border-subtle)",
-                                            background: "var(--bg-surface)",
-                                        }}
-                                    >
-                                        <p className="font-semibold text-[color:var(--text-primary)]">
-                                            {perk.name}{" "}
-                                            <span className="text-[color:var(--text-muted)]">
-                                                ({PERK_COST} credits)
-                                            </span>
-                                        </p>
-                                        <p className="text-[color:var(--text-secondary)]">
-                                            {owned ? "Owned" : perk.description}
-                                        </p>
-                                    </button>
-                                );
-                            })}
-                            {UNLOCKS.map((unlock) => {
-                                const owned = metaProgress.unlocked[unlock.id];
-                                const affordable =
-                                    metaProgress.credits >= unlock.cost;
-                                return (
-                                    <button
-                                        key={unlock.id}
-                                        type="button"
-                                        disabled={owned || !affordable}
-                                        onClick={() => {
-                                            buyUnlock(unlock.id);
-                                        }}
-                                        className="rounded border px-3 py-2 text-left text-[11px] disabled:opacity-50"
-                                        style={{
-                                            borderColor: owned
-                                                ? "var(--accent-confirm)"
-                                                : "var(--border-subtle)",
-                                            background: "var(--bg-surface)",
-                                        }}
-                                    >
-                                        <p className="font-semibold text-[color:var(--text-primary)]">
-                                            {unlock.name}{" "}
-                                            <span className="text-[color:var(--text-muted)]">
-                                                ({unlock.cost} credits)
-                                            </span>
-                                        </p>
-                                        <p className="text-[color:var(--text-secondary)]">
-                                            {owned ? "Unlocked" : unlock.description}
-                                        </p>
-                                    </button>
-                                );
-                            })}
+                            <button
+                                type="button"
+                                onClick={metaShopOpen ? closeMetaShop : openMetaShop}
+                                className="rounded border px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.16em]"
+                                style={{
+                                    borderColor: "var(--accent-player)",
+                                    color: "var(--accent-player)",
+                                }}
+                            >
+                                {metaShopOpen ? "Loadout" : "Meta Shop"}
+                            </button>
                         </div>
+                        <p className="mb-2 text-[clamp(0.6rem,1.32vh,0.8rem)] uppercase tracking-[0.18em] text-[color:var(--text-secondary)]">
+                            Meta Credits Earned: +{roundReward?.creditsEarned ?? 0}
+                        </p>
+                        <p className="mb-2 text-[clamp(0.6rem,1.32vh,0.8rem)] uppercase tracking-[0.18em] text-[color:var(--text-secondary)]">
+                            Total Credits: {metaProgress.credits}
+                        </p>
+                        <div className="min-h-0 flex-1 overflow-y-auto pr-1">
+                            {metaShopOpen ? (
+                                <div className="grid gap-2">
+                                    {RUN_PERKS.map((perk) => {
+                                        const owned = metaProgress.ownedPerks[perk.id];
+                                        const affordable = metaProgress.credits >= PERK_COST;
+                                        return (
+                                            <button
+                                                key={perk.id}
+                                                type="button"
+                                                disabled={owned || !affordable}
+                                                onClick={() => buyPerk(perk.id)}
+                                                className="rounded border px-2 py-2 text-left text-[10px] disabled:opacity-50"
+                                                style={{
+                                                    borderColor: owned
+                                                        ? "var(--accent-confirm)"
+                                                        : "var(--border-subtle)",
+                                                    background: "var(--bg-surface)",
+                                                }}
+                                            >
+                                                <p className="font-semibold text-[color:var(--text-primary)]">
+                                                    {perk.name} ({PERK_COST}c)
+                                                </p>
+                                                <p className="text-[color:var(--text-secondary)]">
+                                                    {owned ? "Owned" : perk.description}
+                                                </p>
+                                            </button>
+                                        );
+                                    })}
+                                    {UNLOCKS.map((unlock) => {
+                                        const owned = metaProgress.unlocked[unlock.id];
+                                        const affordable = metaProgress.credits >= unlock.cost;
+                                        return (
+                                            <button
+                                                key={unlock.id}
+                                                type="button"
+                                                disabled={owned || !affordable}
+                                                onClick={() => buyUnlock(unlock.id)}
+                                                className="rounded border px-2 py-2 text-left text-[10px] disabled:opacity-50"
+                                                style={{
+                                                    borderColor: owned
+                                                        ? "var(--accent-confirm)"
+                                                        : "var(--border-subtle)",
+                                                    background: "var(--bg-surface)",
+                                                }}
+                                            >
+                                                <p className="font-semibold text-[color:var(--text-primary)]">
+                                                    {unlock.name} ({unlock.cost}c)
+                                                </p>
+                                                <p className="text-[color:var(--text-secondary)]">
+                                                    {owned ? "Unlocked" : unlock.description}
+                                                </p>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            ) : (
+                                <div className="grid gap-2">
+                                    {RUN_PERKS.map((perk) => (
+                                        <button
+                                            key={perk.id}
+                                            type="button"
+                                            onClick={() => handleToggleLoadout(perk.id)}
+                                            disabled={!metaProgress.ownedPerks[perk.id]}
+                                            className="rounded border px-2 py-2 text-left text-[10px] disabled:opacity-45"
+                                            style={{
+                                                borderColor: selectedLoadout.includes(perk.id)
+                                                    ? "var(--accent-player)"
+                                                    : "var(--border-subtle)",
+                                                background: "var(--bg-surface)",
+                                            }}
+                                        >
+                                            <p className="font-semibold text-[color:var(--text-primary)]">
+                                                {perk.name}
+                                            </p>
+                                            <p className="text-[color:var(--text-secondary)]">
+                                                {!metaProgress.ownedPerks[perk.id]
+                                                    ? "Buy in Meta Shop"
+                                                    : perk.description}
+                                            </p>
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </section>
+                <footer
+                    className="grid h-full grid-rows-[45%_55%] gap-2 rounded border px-3 py-3 md:px-4"
+                    style={{ borderColor: "var(--border-subtle)" }}
+                >
+                    <div className="flex items-center justify-center border-b border-[color:var(--border-subtle)] pb-2">
+                        <p className="text-center text-[clamp(0.64rem,1.38vh,0.9rem)] italic text-[color:var(--text-secondary)]">
+                            "{legacyLine}"
+                        </p>
+                    </div>
+                    <div className="flex flex-wrap items-center justify-center gap-2">
                         <button
                             type="button"
-                            onClick={closeMetaShop}
-                            className="mt-3 w-full rounded border px-3 py-2 text-xs font-semibold uppercase tracking-[2px]"
+                            onClick={handleStartNewRun}
+                            className="rounded border px-5 py-2.5 text-[clamp(0.62rem,1.4vh,0.86rem)] font-black uppercase tracking-[0.24em]"
+                            style={{
+                                borderColor: result.isWin ? "var(--accent-player)" : "var(--accent-lose)",
+                                color: "#060c14",
+                                background: result.isWin ? "var(--accent-player)" : "var(--accent-lose)",
+                            }}
+                        >
+                            Initiate New Epoch
+                        </button>
+                        {offeredNerfs.length > 0 ? (
+                            offeredNerfs.map((nerf) => (
+                                <button
+                                    key={nerf.id}
+                                    type="button"
+                                    onClick={() => {
+                                        setLoadout(selectedLoadout);
+                                        pickNerfAndContinue(nerf.id);
+                                    }}
+                                    className="rounded border px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.18em]"
+                                    style={{
+                                        borderColor: "var(--border-subtle)",
+                                        color: "var(--text-secondary)",
+                                    }}
+                                >
+                                    {nerf.name}
+                                </button>
+                            ))
+                        ) : (
+                            <button
+                                type="button"
+                                onClick={handleConfirmLoadout}
+                                className="rounded border px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.18em]"
+                                style={{
+                                    borderColor: "var(--accent-player)",
+                                    color: "var(--accent-player)",
+                                }}
+                            >
+                                Commit Loadout
+                            </button>
+                        )}
+                        <button
+                            type="button"
+                            onClick={handleRestart}
+                            className="rounded border px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.18em]"
                             style={{
                                 borderColor: "var(--border-subtle)",
                                 color: "var(--text-secondary)",
                             }}
                         >
-                            Back to rewards
+                            Re-Boot Simulation
                         </button>
-                    </div>
-                ) : null}
-                <section className="rounded border p-3" style={{ borderColor: "var(--border-subtle)" }}>
-                    {result.isWin ? (
-                        <>
-                            <button
-                                type="button"
-                                onClick={openMetaShop}
-                                className="rounded border px-4 py-2 text-xs font-semibold uppercase tracking-[2px]"
-                                style={{
-                                    borderColor: "var(--accent-player)",
-                                    color: "var(--accent-player)",
-                                    background: "var(--accent-player-bg)",
-                                }}
-                            >
-                                Open Meta Shop
-                            </button>
-                        <div className="grid gap-2 text-left">
-                            <p className="text-[10px] uppercase tracking-[2px] text-[color:var(--text-muted)]">
-                                Configure loadout (max 2 perks)
-                            </p>
-                            {RUN_PERKS.map((perk) => (
-                                <button
-                                    key={perk.id}
-                                    type="button"
-                                    onClick={() => handleToggleLoadout(perk.id)}
-                                    disabled={!metaProgress.ownedPerks[perk.id]}
-                                    className="rounded border px-3 py-2 text-left text-xs"
-                                    style={{
-                                        borderColor: selectedLoadout.includes(perk.id)
-                                            ? "var(--accent-player)"
-                                            : "var(--border-subtle)",
-                                        background: "var(--bg-surface)",
-                                    }}
-                                >
-                                    <p className="font-semibold text-[color:var(--text-primary)]">
-                                        {perk.name}
-                                    </p>
-                                    <p className="text-[color:var(--text-secondary)]">
-                                        {!metaProgress.ownedPerks[perk.id]
-                                            ? "Buy in Meta Shop"
-                                            : perk.description}
-                                    </p>
-                                </button>
-                            ))}
-                        </div>
-                        {offeredNerfs.length > 0 ? (
-                            <div className="grid gap-2 text-left">
-                                <p className="text-[10px] uppercase tracking-[2px] text-[color:var(--text-muted)]">
-                                    Choose 1 nerf for next run (mandatory)
-                                </p>
-                                {offeredNerfs.map((nerf) => (
-                                    <button
-                                        key={nerf.id}
-                                        type="button"
-                                        onClick={() => {
-                                            setLoadout(selectedLoadout);
-                                            pickNerfAndContinue(nerf.id);
-                                        }}
-                                        className="rounded border px-3 py-2 text-left text-xs"
-                                        style={{
-                                            borderColor: "var(--border-subtle)",
-                                            background: "var(--bg-surface)",
-                                        }}
-                                    >
-                                        <p className="font-semibold text-[color:var(--text-primary)]">
-                                            {nerf.name}
-                                        </p>
-                                        <p className="text-[color:var(--text-secondary)]">
-                                            {nerf.description}
-                                        </p>
-                                    </button>
-                                ))}
-                            </div>
-                        ) : (
-                            <button
-                                type="button"
-                                onClick={handleConfirmLoadout}
-                                className="rounded border px-4 py-2 text-xs font-semibold uppercase tracking-[2px]"
-                                style={{
-                                    borderColor: "var(--accent-player)",
-                                    color: "var(--accent-player)",
-                                    background: "var(--accent-player-bg)",
-                                }}
-                            >
-                                Continue to next round
-                            </button>
-                        )}
-                            <button
-                                type="button"
-                                onClick={handleStartNewRun}
-                                className="rounded border px-4 py-2 text-xs font-semibold uppercase tracking-[2px]"
-                                style={{
-                                    borderColor: "var(--border-subtle)",
-                                    color: "var(--text-secondary)",
-                                }}
-                            >
-                                Initiate New Epoch
-                            </button>
-                        </>
-                    ) : (
-                        <>
-                        <div className="grid gap-2 text-left">
-                            <p className="text-[10px] uppercase tracking-[2px] text-[color:var(--text-muted)]">
-                                Configure loadout for next run (max 2 perks)
-                            </p>
-                            {RUN_PERKS.map((perk) => (
-                                <button
-                                    key={perk.id}
-                                    type="button"
-                                    onClick={() => handleToggleLoadout(perk.id)}
-                                    disabled={!metaProgress.ownedPerks[perk.id]}
-                                    className="rounded border px-3 py-2 text-left text-xs disabled:opacity-50"
-                                    style={{
-                                        borderColor: selectedLoadout.includes(perk.id)
-                                            ? "var(--accent-player)"
-                                            : "var(--border-subtle)",
-                                        background: "var(--bg-surface)",
-                                    }}
-                                >
-                                    <p className="font-semibold text-[color:var(--text-primary)]">
-                                        {perk.name}
-                                    </p>
-                                    <p className="text-[color:var(--text-secondary)]">
-                                        {!metaProgress.ownedPerks[perk.id]
-                                            ? "Buy in Meta Shop"
-                                            : perk.description}
-                                    </p>
-                                </button>
-                            ))}
-                        </div>
                         <button
                             type="button"
-                            onClick={openMetaShop}
-                            className="rounded border px-4 py-2 text-xs font-semibold uppercase tracking-[2px]"
+                            onClick={handleShareDossier}
+                            className="rounded border px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.18em]"
                             style={{
                                 borderColor: "var(--accent-player)",
                                 color: "var(--accent-player)",
-                                background: "var(--accent-player-bg)",
                             }}
                         >
-                            Open Meta Shop
+                            Share Dossier
                         </button>
                         <button
                             type="button"
-                            onClick={handleConfirmLoadout}
-                            className="rounded px-4 py-2 text-sm font-bold uppercase tracking-[3px]"
+                            onClick={handleDisconnect}
+                            className="rounded border px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.18em]"
                             style={{
-                                background: "var(--accent-player)",
-                                color: "#0b0e16",
+                                borderColor: "var(--border-subtle)",
+                                color: "var(--text-secondary)",
                             }}
                         >
-                            Initiate New Epoch
+                            Disconnect
                         </button>
-                            <button
-                                type="button"
-                                onClick={handleRestart}
-                                className="rounded border px-4 py-2 text-xs font-semibold uppercase tracking-[2px]"
-                                style={{
-                                    borderColor: "var(--border-subtle)",
-                                    color: "var(--text-secondary)",
-                                }}
-                            >
-                                Re-Boot Simulation
-                            </button>
-                        </>
-                    )}
-                </section>
-                <div className="flex flex-wrap items-center justify-center gap-2 border-t border-[color:var(--border-subtle)] pt-4">
-                    <button
-                        type="button"
-                        onClick={handleShareDossier}
-                        className="rounded border px-4 py-2 text-xs font-semibold uppercase tracking-[2px]"
-                        style={{
-                            borderColor: "var(--accent-player)",
-                            color: "var(--accent-player)",
-                            background: "var(--accent-player-bg)",
-                        }}
-                    >
-                        Export Intel
-                    </button>
-                    <button
-                        type="button"
-                        onClick={handleRestart}
-                        className="rounded border px-4 py-2 text-xs font-semibold uppercase tracking-[2px]"
-                        style={{
-                            borderColor: "var(--border-subtle)",
-                            color: "var(--text-secondary)",
-                        }}
-                    >
-                        Re-Boot Simulation
-                    </button>
-                    <button
-                        type="button"
-                        onClick={handleDisconnect}
-                        className="rounded border px-4 py-2 text-xs font-semibold uppercase tracking-[2px]"
-                        style={{
-                            borderColor: "var(--border-subtle)",
-                            color: "var(--text-secondary)",
-                        }}
-                    >
-                        Disconnect
-                    </button>
-                </div>
+                    </div>
+                    {roundReward ? (
+                        <p className="text-center text-[10px] uppercase tracking-[0.16em] text-[color:var(--text-muted)]">
+                            Round {roundNumber} score {roundReward.score} | campaign {metaProgress.campaign.wins}/12
+                            | credits +{roundReward.creditsEarned}
+                            {!creditsCanBeGranted ? " (deferred)" : ""}
+                        </p>
+                    ) : null}
+                    {saveStatus ? (
+                        <p
+                            className="text-center text-[10px] text-[color:var(--text-muted)]"
+                            aria-live="polite"
+                        >
+                            {saveStatus}
+                        </p>
+                    ) : null}
+                    {shareStatus ? (
+                        <p
+                            className="text-center text-[10px] text-[color:var(--text-muted)]"
+                            aria-live="polite"
+                        >
+                            {shareStatus}
+                        </p>
+                    ) : null}
+                </footer>
             </div>
         </div>
     );
@@ -709,15 +599,15 @@ interface StatProps {
 }
 
 const Stat = ({ label, value }: StatProps) => (
-    <div className="flex flex-col gap-0.5">
+    <div className="flex min-h-0 flex-col justify-center rounded border border-[color:var(--border-subtle)] bg-[color:rgba(2,6,23,0.26)] p-2">
         <span
-            className="text-[9px] uppercase tracking-[2px]"
+            className="text-[clamp(0.52rem,1.08vh,0.68rem)] uppercase tracking-[0.2em]"
             style={{ color: "var(--text-muted)" }}
         >
             {label}
         </span>
         <span
-            className="text-base font-bold"
+            className="text-[clamp(0.92rem,2.35vh,1.55rem)] font-black"
             style={{ color: "var(--text-primary)" }}
         >
             {value}
@@ -783,5 +673,29 @@ const buildInsurgencyTrend = (avg: number, isWin: boolean): number[] => {
         return clampPercent(anchor + drift + wobble);
     });
 };
+
+const buildElementEchoes = (avg: number): Array<{ name: string; level: string }> => {
+    const bands = ["LOW", "MID", "HIGH"] as const;
+    const names = ["POL", "MIL", "ECO", "REL", "SCI", "CUL"];
+    return names.map((name, idx) => {
+        const score = (avg * 100 + (idx * 13) % 29) % 100;
+        const level = score > 66 ? bands[2] : score > 33 ? bands[1] : bands[0];
+        return { name, level };
+    });
+};
+
+interface ElementBadgeProps {
+    name: string;
+    level: string;
+}
+
+const ElementBadge = ({ name, level }: ElementBadgeProps) => (
+    <div className="rounded border border-[color:var(--border-subtle)] bg-[color:rgba(2,6,23,0.28)] px-1.5 py-1 text-center">
+        <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-[color:var(--text-secondary)]">
+            {name}
+        </p>
+        <p className="text-[9px] uppercase tracking-[0.16em] text-[color:var(--text-muted)]">{level}</p>
+    </div>
+);
 
 export default ResultOverlay;
