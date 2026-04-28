@@ -65,7 +65,20 @@ local-storage keys.
 
 ## Supabase setup
 
-In the Supabase SQL editor, run these **in order**, manually:
+In the Supabase SQL editor, run these scripts manually.
+
+### Recommended (single file bootstrap)
+
+Run:
+
+1. `supabase/004_full_bootstrap.sql` — full idempotent setup (`schema + RLS + trigger + view + grants`)
+
+This is safe to run on a clean project and also safe to re-run on an
+already initialized project.
+
+### Legacy (split files, still supported)
+
+If you prefer the split setup, run these **in order**:
 
 1. `supabase/001_schema.sql` — `profiles`, `matches`, `feedback`, `api_logs`
 2. `supabase/002_rls_policies.sql` — RLS for anonymous + authenticated users
@@ -75,9 +88,24 @@ Then in **Authentication → Providers**, enable **Anonymous sign-ins** so
 every player automatically gets a `user_id` (and therefore a saveable
 match history) without filling out a form.
 
-If you later need to drop and re-apply, run them in reverse order
-(triggers → policies → schema) or just reset the public schema in a
-non-prod project.
+If you later need to drop and re-apply with legacy files, run them in
+reverse order (triggers → policies → schema) or just reset the public
+schema in a non-prod project.
+
+The localhost/development fallback remains intentionally intact: when
+Supabase env vars are missing or invalid, gameplay still runs locally and
+storage-dependent features degrade gracefully instead of crashing.
+
+### Manual validation checklist
+
+After running SQL in Supabase:
+
+1. **Clean project**: execute `supabase/004_full_bootstrap.sql` once and verify tables, policies, trigger, and `profile_stats` view exist.
+2. **Existing project**: execute `supabase/004_full_bootstrap.sql` again and confirm it completes without destructive side effects.
+3. **Anonymous auth**: sign in anonymously and verify a `profiles` row is auto-created for the new user.
+4. **Match persistence**: finish a run and verify `/api/matches` inserts a row in `matches` for that user.
+5. **Feedback persistence**: submit feedback and verify insert in `feedback`.
+6. **Local backup behavior**: run app without Supabase env vars and confirm core gameplay still works while persistence features fail gracefully.
 
 ## Project layout
 
@@ -89,7 +117,8 @@ juego-de-la-vida/
 ├── supabase/
 │   ├── 001_schema.sql
 │   ├── 002_rls_policies.sql
-│   └── 003_triggers.sql
+│   ├── 003_triggers.sql
+│   └── 004_full_bootstrap.sql
 ├── src/
 │   ├── middleware.ts            ← Supabase session refresh
 │   ├── app/
